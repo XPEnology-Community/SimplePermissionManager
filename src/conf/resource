@@ -2,29 +2,20 @@
   "webservice": {
     "services": [
       {
-        "service": "simplepermissionmanager",
+        "service": "SimplePermissionManager",
         "display_name": "Simple Permission Manager",
         "type": "static",
-        "root": "simplepermissionmanager",
-        "icon": "app/images/simplepermissionmanager-{0}.png"
+        "root": "SimplePermissionManager",
+        "icon": "app/images/SimplePermissionManager-{0}.png"
       }
     ],
     "migrate": {
       "root": [
         {
-          "old": "simplepermissionmanager",
-          "new": "simplepermissionmanager"
+          "old": "SimplePermissionManager",
+          "new": "SimplePermissionManager"
         }
       ]
-    },
-    "pkg_dir_prepare": [
-      {
-        "source": "/var/packages/simplepermissionmanager/target/web/docs/",
-        "target": "simplepermissionmanager",
-        "mode": "0755",
-        "user": "sc-simplepermissionmanager",
-        "group": "http"
-      }
-    ]
+    }
   }
 }

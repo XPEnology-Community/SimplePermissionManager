@@ -1,10 +1,10 @@
 {
-    "simplepermissionmanager.js": {
+    "SimplePermissionManager.js": {
         "SynoCommunity.SimplePermissionManager.AppInstance": {
             "type": "app",
             "title": "app:app_name",
             "version": "0.1",
-            "icon": "images/simplepermissionmanager-{0}.png",
+            "icon": "images/SimplePermissionManager-{0}.png",
             "texts": "texts",
             "allowMultiInstance": false,
             "allUsers": false,
@@ -14,7 +14,7 @@
         "SynoCommunity.SimplePermissionManager.AppWindow": {
             "type": "lib",
             "title": "app:app_name",
-            "icon": "images/simplepermissionmanager-{0}.png",
+            "icon": "images/SimplePermissionManager-{0}.png",
             "texts": "texts"
         }
     }

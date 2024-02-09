@@ -837,7 +837,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call external API on click
     onExternalAPIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/simplepermissionmanager/externalapi.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/externalapi.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -858,7 +858,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call bash CGI on click
     onBashCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/simplepermissionmanager/bash.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/bash.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -879,7 +879,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call C CGI on click
     onCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/simplepermissionmanager/test.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/test.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -900,7 +900,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call Python CGI on click
     onPythonCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/simplepermissionmanager/python.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/python.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -921,7 +921,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call Perl CGI on click
     onPerlCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/simplepermissionmanager/perl.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/perl.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -976,7 +976,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling python API
     createGrid: function () {
-        var localUrl = "/webman/3rdparty/simplepermissionmanager/storepythonsynoapi.cgi";
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/storepythonsynoapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1196,7 +1196,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling bash API
     createRatesGrid: function () {
-        var localUrl = "/webman/3rdparty/simplepermissionmanager/storebashratesapi.cgi";
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/storebashratesapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1296,7 +1296,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling python SQL API
     createSqlGrid: function () {
-        var localUrl = "/webman/3rdparty/simplepermissionmanager/storepythonsqlapi.cgi";
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/storepythonsqlapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
