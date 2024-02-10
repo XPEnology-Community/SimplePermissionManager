@@ -23,7 +23,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
             // Tab for CGI or API calls
             allTabs.push({
-                title: "Server Calls",
+                title: "Overview",
                 items: [
                     this.createDisplayCGI(),
                     this.createDisplayAPI(),
@@ -94,10 +94,57 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     },
     // Create the display of CGI calls
     createDisplayCGI: function () {
+        spmStatus = {
+            xtype: "syno_displayfield",
+            value: "Unknown",
+            width: 140,
+        };
+        active = false;
+        Ext.Ajax.request({
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/status.cgi",
+            method: "GET",
+            async: false,
+            timeout: 60000,
+            success: function (response) {
+                var data = Ext.decode(response.responseText);
+                if (data.active) {
+                    spmStatus.value = "Active";
+                    spmStatus.style = {
+                        color: 'green'
+                    };
+                    active = true;
+                } else {
+                    spmStatus.value = "Inactive";
+                }
+            },
+            failure: function (response) {
+                window.alert("Fetch Status Failed.");
+            },
+        });
         return new SYNO.ux.FieldSet({
-            title: "Call to CGI",
+            title: "Status",
             collapsible: true,
             items: [
+                {
+                    xtype: "syno_compositefield",
+                    hideLabel: true,
+                    items: [
+                        {
+                            xtype: "syno_displayfield",
+                            value: "Status:",
+                            width: 140,
+                        },
+                        spmStatus,
+                        {
+                            id: "active_button",
+                            xtype: "syno_button",
+                            btnStyle: "blue",
+                            text: "Active",
+                            hidden: active,
+                            handler: this.onActive.bind(this),
+                        },
+                    ],
+                },
                 {
                     xtype: "syno_compositefield",
                     hideLabel: true,
@@ -218,7 +265,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                         {
                             xtype: "syno_displayfield",
                             value: "Password",
-                            width: 100,
+                            width: 140,
                         },
                         {
                             id: "admin_password",
@@ -837,7 +884,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call external API on click
     onExternalAPIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/SimplePermissionManager/externalapi.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/externalapi.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -858,7 +905,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call bash CGI on click
     onBashCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/SimplePermissionManager/bash.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/bash.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -879,7 +926,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call C CGI on click
     onCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/SimplePermissionManager/test.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/test.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -897,10 +944,14 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             },
         });
     },
+    // Call Refresh on click
+    onActive: function () {
+        Ext.getCmp("active_button").hide();
+    },
     // Call Python CGI on click
     onPythonCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/SimplePermissionManager/python.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/python.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -921,7 +972,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Call Perl CGI on click
     onPerlCGIClick: function () {
         Ext.Ajax.request({
-            url: "/webman/3rdparty/SimplePermissionManager/perl.cgi",
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/perl.cgi",
             method: "GET",
             timeout: 60000,
             params: {
@@ -961,40 +1012,44 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Create the display of Syno Store
     createSynoStore: function () {
         return new SYNO.ux.FieldSet({
-            title: "Python Package Store",
+            title: "Packages",
             collapsible: true,
             autoHeight: true,
             items: [
                 {
                     xtype: "syno_compositefield",
                     hideLabel: true,
-                    items: [this.createGrid()],
+                    items: [this.createPackageGrid()],
                 },
             ],
         });
     },
 
     // Create JSON Store grid calling python API
-    createGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/storepythonsynoapi.cgi";
+    createPackageGrid: function () {
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/synopkg-list-packages.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
             url: localUrl,
             restful: true,
             root: "result",
-            idProperty: "identifier",
+            idProperty: "id",
             fields: [
                 {
-                    name: "identifier",
+                    name: "id",
                     type: "int",
                 },
                 {
-                    name: "pkg_name",
+                    name: "package",
                     type: "string",
                 },
                 {
-                    name: "pkg_desc",
+                    name: "version",
+                    type: "string",
+                },
+                {
+                    name: "description",
                     type: "string",
                 },
             ],
@@ -1018,19 +1073,24 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 },
                 columns: [
                     {
-                        header: "Id",
-                        width: 20,
-                        dataIndex: "identifier",
+                        header: "ID",
+                        width: 30,
+                        dataIndex: "id",
                     },
                     {
-                        header: "Pkg name",
-                        width: 50,
-                        dataIndex: "pkg_name",
+                        header: "Package Name",
+                        width: 100,
+                        dataIndex: "package",
+                    },
+                    {
+                        header: "Version",
+                        width: 80,
+                        dataIndex: "version",
                     },
                     {
                         header: "Description",
                         width: 300,
-                        dataIndex: "pkg_desc",
+                        dataIndex: "description",
                     },
                 ],
             }),
@@ -1196,7 +1256,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling bash API
     createRatesGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/storebashratesapi.cgi";
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/storebashratesapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1296,7 +1356,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling python SQL API
     createSqlGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/storepythonsqlapi.cgi";
+        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/storepythonsqlapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
