@@ -10,6 +10,11 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppInstance", {
     },
 });
 
+// Translator
+_V = function (category, element) {
+    return _TT("SynoCommunity.SimplePermissionManager.AppInstance", category, element)
+}
+
 // Window definition
 Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     extend: "SYNO.SDS.AppWindow",
@@ -23,7 +28,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
             // Tab for CGI or API calls
             allTabs.push({
-                title: "Overview",
+                title: _V("ui", "overview"),
                 items: [
                     this.createDisplayCGI(),
                     this.createDisplayAPI(),
