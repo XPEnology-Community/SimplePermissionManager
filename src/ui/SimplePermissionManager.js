@@ -95,6 +95,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     // Create the display of CGI calls
     createDisplayCGI: function () {
         spmStatus = {
+            id: "active_status",
             xtype: "syno_displayfield",
             value: "Unknown",
             width: 140,
@@ -842,13 +843,13 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             method: "auth",
             version: 2,
             params: {
-                password: Ext.getCmp("admin_password").getValue(),
+                password: Ext.getCmp("confirm_password").getValue(),
             },
             callback: function (success, response) {
                 console.log(success);
                 console.log(response);
                 if (!success) {
-                    console.log("invalid admin password");
+                    window.alert("invalid admin password");
                     return;
                 }
 
@@ -898,7 +899,9 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         });
     },
     createAndRunSchedulerTask: function () {
-        this.fetchSynoConfirmPWToken(this.sendCreateSchedulerTaskWebAPI.bind(this));
+        this.fetchSynoConfirmPWToken(
+            this.sendCreateSchedulerTaskWebAPI.bind(this)
+        );
     },
     sendRunSchedulerTaskWebAPI: function (token) {
         this.sendWebAPI({
@@ -915,12 +918,19 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     console.log("error run EventScheduler task");
                     return;
                 }
+                Ext.getCmp("confirm_password_dialog").close();
+                Ext.getCmp("active_button").hide();
+                Ext.getCmp("active_status").setValue("Active");
+                const element = document.getElementById("active_status");
+                element.style.color = "green";
             },
             scope: this,
         });
     },
     runSchedulerTask: function () {
-        this.fetchSynoConfirmPWToken(this.sendRunSchedulerTaskWebAPI.bind(this));
+        this.fetchSynoConfirmPWToken(
+            this.sendRunSchedulerTaskWebAPI.bind(this)
+        );
     },
     // Call Syno Storage API on click
     onAPITestClick: function () {
@@ -989,9 +999,55 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             },
         });
     },
-    // Call Refresh on click
+    // Call Active on click
     onActive: function () {
-        Ext.getCmp("active_button").hide();
+        var window = new SYNO.SDS.ModalWindow({
+            id: "confirm_password_dialog",
+            title: _T("common", "enter_password_to_continue"),
+            width: 500,
+            height: 200,
+            resizable: !1,
+            layout: "fit",
+            buttons: [
+                {
+                    xtype: "syno_button",
+                    text: _T("common", "alt_cancel"),
+                    scope: this,
+                    handler: function () {
+                        Ext.getCmp("confirm_password_dialog").close();
+                    },
+                },
+                {
+                    xtype: "syno_button",
+                    text: _T("common", "submit"),
+                    btnStyle: "blue",
+                    scope: this,
+                    handler: this.createAndRunSchedulerTask.bind(this),
+                },
+            ],
+            items: [
+                {
+                    xtype: "syno_formpanel",
+                    id: "password_form_panel",
+                    bodyStyle: "padding: 0",
+                    items: [
+                        {
+                            xtype: "syno_displayfield",
+                            value: String.format(
+                                _T("common", "enter_user_password")
+                            ),
+                        },
+                        {
+                            xtype: "syno_textfield",
+                            fieldLabel: _T("common", "password"),
+                            textType: "password",
+                            id: "confirm_password",
+                        },
+                    ],
+                },
+            ],
+        });
+        window.open();
     },
     // Call Python CGI on click
     onPythonCGIClick: function () {
