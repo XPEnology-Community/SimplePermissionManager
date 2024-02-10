@@ -110,7 +110,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 if (data.active) {
                     spmStatus.value = "Active";
                     spmStatus.style = {
-                        color: 'green'
+                        color: "green",
                     };
                     active = true;
                 } else {
@@ -836,8 +836,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             },
         });
     },
-    // Call Syno Storage API on click
-    onAPITestClick: function () {
+    fetchSynoConfirmPWToken: function (callback) {
         this.sendWebAPI({
             api: "SYNO.Core.User.PasswordConfirm",
             method: "auth",
@@ -849,120 +848,83 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 console.log(success);
                 console.log(response);
                 if (!success) {
-                    console.log("error admin password");
+                    console.log("invalid admin password");
                     return;
                 }
 
                 if (
                     response.SynoConfirmPWToken === null ||
-                    (typeof response.SynoConfirmPWToken === "string" && response.SynoConfirmPWToken.trim() === "")
+                    (typeof response.SynoConfirmPWToken === "string" &&
+                        response.SynoConfirmPWToken.trim() === "")
                 ) {
                     console.log("empty SynoConfirmPWToken");
                     return;
                 }
 
-                this.sendWebAPI({
-                    api: "SYNO.Core.EventScheduler.Root",
-                    method: "create",
-                    version: 1,
-                    params: {
-                        task_name: "Active Simple Permission Manager",
-                        owner: { 0: "root" },
-                        event: "bootup",
-                        enable: true,
-                        depend_on_task: "",
-                        notify_enable: false,
-                        notify_mail: "",
-                        notify_if_error: false,
-                        operation_type: "script",
-                        operation: "chown root:root /var/packages/SimplePermissionManager/target/bin/spm-exec && chmod +s /var/packages/SimplePermissionManager/target/bin/spm-exec",
-                        SynoConfirmPWToken: response.SynoConfirmPWToken,
-                    },
-                    callback: function (success, message) {
-                        console.log(success);
-                        if (!success) {
-                            console.log("error create EventScheduler task");
-                            return;
-                        }
-
-                        this.sendWebAPI({
-                            api: "SYNO.Core.User.PasswordConfirm",
-                            method: "auth",
-                            version: 2,
-                            params: {
-                                password: Ext.getCmp("admin_password").getValue(),
-                            },
-                            callback: function (success, response) {
-                                console.log(success);
-                                console.log(response);
-                                if (!success) {
-                                    console.log("error admin password");
-                                    return;
-                                }
-
-                                if (
-                                    response.SynoConfirmPWToken === null ||
-                                    (typeof response.SynoConfirmPWToken === "string" && response.SynoConfirmPWToken.trim() === "")
-                                ) {
-                                    console.log("empty SynoConfirmPWToken");
-                                    return;
-                                }
-
-                                this.sendWebAPI({
-                                    api: "SYNO.Core.EventScheduler",
-                                    method: "run",
-                                    version: 1,
-                                    params: {
-                                        task_name: "Active Simple Permission Manager",
-                                        SynoConfirmPWToken: response.SynoConfirmPWToken,
-                                    },
-                                    callback: function (success, message, data) {
-                                        console.log(success);
-                                        if (!success) {
-                                            console.log("error run EventScheduler task");
-                                            return;
-                                        }
-                                    },
-                                    scope: this,
-                                });
-                            },
-                            scope: this,
-                        });
-
-                    },
-                    scope: this,
-                });
+                callback(response.SynoConfirmPWToken);
             },
             scope: this,
         });
+    },
+    sendCreateSchedulerTaskWebAPI: function (token) {
+        this.sendWebAPI({
+            api: "SYNO.Core.EventScheduler.Root",
+            method: "create",
+            version: 1,
+            params: {
+                task_name: "Active Simple Permission Manager",
+                owner: { 0: "root" },
+                event: "bootup",
+                enable: true,
+                depend_on_task: "",
+                notify_enable: false,
+                notify_mail: "",
+                notify_if_error: false,
+                operation_type: "script",
+                operation:
+                    "chown root:root /var/packages/SimplePermissionManager/target/bin/spm-exec && chmod +s /var/packages/SimplePermissionManager/target/bin/spm-exec",
+                SynoConfirmPWToken: token,
+            },
+            callback: function (success, message) {
+                console.log(success);
+                if (!success) {
+                    console.log("error create EventScheduler task");
+                    return;
+                }
 
-        // SYNO.SDS.Utils.PasswordConfirmDialog.openDialog(this, function (e) {
-        //    console.log(e.SynoConfirmPWToken);
-        //    this.sendWebAPI({
-        //        api: "SYNO.Core.EventScheduler.Root",
-        //        method: "create",
-        //        version: 1,
-        //        params: {
-        //            task_name: "Test 1",
-        //            owner: { 0: "root" },
-        //            event: "bootup",
-        //            enable: true,
-        //            depend_on_task: "",
-        //            notify_enable: false,
-        //            notify_mail: "",
-        //            notify_if_error: false,
-        //            operation_type: "script",
-        //            operation: "date >> /tmp/log",
-        //            SynoConfirmPWToken: e.SynoConfirmPWToken,
-        //        },
-        //        callback: function (success, message, data) {
-        //            console.log(success);
-        //            console.log(message);
-        //            console.log(data);
-        //        },
-        //        scope: this,
-        //    });
-        // });
+                this.runSchedulerTask();
+            },
+            scope: this,
+        });
+    },
+    createAndRunSchedulerTask: function () {
+        this.fetchSynoConfirmPWToken(this.sendCreateSchedulerTaskWebAPI.bind(this));
+    },
+    sendRunSchedulerTaskWebAPI: function (token) {
+        this.sendWebAPI({
+            api: "SYNO.Core.EventScheduler",
+            method: "run",
+            version: 1,
+            params: {
+                task_name: "Active Simple Permission Manager",
+                SynoConfirmPWToken: token,
+            },
+            callback: function (success, message, data) {
+                console.log(success);
+                if (!success) {
+                    console.log("error run EventScheduler task");
+                    return;
+                }
+            },
+            scope: this,
+        });
+    },
+    runSchedulerTask: function () {
+        this.fetchSynoConfirmPWToken(this.sendRunSchedulerTaskWebAPI.bind(this));
+    },
+    // Call Syno Storage API on click
+    onAPITestClick: function () {
+        this.createAndRunSchedulerTask();
     },
     // Call external API on click
     onExternalAPIClick: function () {
@@ -1110,7 +1072,8 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling python API
     createPackageGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/synopkg-list-packages.cgi";
+        var localUrl =
+            "/webman/3rdparty/SimplePermissionManager/cgi/synopkg-list-packages.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1339,7 +1302,8 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling bash API
     createRatesGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/storebashratesapi.cgi";
+        var localUrl =
+            "/webman/3rdparty/SimplePermissionManager/cgi/storebashratesapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1439,7 +1403,8 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
     // Create JSON Store grid calling python SQL API
     createSqlGrid: function () {
-        var localUrl = "/webman/3rdparty/SimplePermissionManager/cgi/storepythonsqlapi.cgi";
+        var localUrl =
+            "/webman/3rdparty/SimplePermissionManager/cgi/storepythonsqlapi.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
