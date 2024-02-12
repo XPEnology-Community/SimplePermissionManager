@@ -51,11 +51,11 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             });
 
             // Tab for User interaction
-            allTabs.push({
-                title: "User interaction",
-                layout: "fit",
-                items: [this.createInteraction()],
-            });
+            // allTabs.push({
+            //     title: "User interaction",
+            //     layout: "fit",
+            //     items: [this.createInteraction()],
+            // });
 
             // Tab for Stores 1
             allTabs.push({
@@ -1141,12 +1141,16 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             url: localUrl,
             restful: true,
             root: "result",
-            idProperty: "id",
+            idProperty: "package",
             fields: [
                 {
-                    name: "id",
-                    type: "int",
+                    name: "enabled",
+                    type: "boolean",
                 },
+                // {
+                //     name: "id",
+                //     type: "int",
+                // },
                 {
                     name: "package",
                     type: "string",
@@ -1165,12 +1169,60 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         var paging = new SYNO.ux.PagingToolbar({
             store: gridStore,
             displayInfo: true,
-            pageSize: 5,
+            pageSize: 10,
             refreshText: "Reload",
+        });
+
+        // var checkboxSelModel = new Ext.grid.CheckboxSelectionModel({
+        //     width: 30,
+        //     dataIndex: "enabled",
+        //     renderer: function(b, c, a) {
+        //         return '<div class="x-grid3-row-checker">&#160;</div>'
+        //     },
+        //     listeners: {
+        //         selectionchange: {
+        //             fn: function (e) {
+        //                 console.log(e);
+        //             },
+        //             scope: this,
+        //         },
+        //     },
+        // });
+        var enableColumn = new SYNO.ux.EnableColumn({
+            header: _T("common", "enabled"),
+            dataIndex: "enabled",
+            width: 60,
+            align: "center",
+            bindRowClick: !0,
+            commitChanges: !0,
+            enableFastSelectAll: !0,
+            toggleRec: function(t) {
+                var v = t.get(this.dataIndex);
+                t.set(this.dataIndex, !v);
+                t.json.enabled = !v;
+
+                Ext.Ajax.request({
+                    url: "/webman/3rdparty/SimplePermissionManager/cgi/update-package.cgi",
+                    method: "POST",
+                    timeout: 60000,
+                    jsonData: {
+                        package: t.json.package,
+                        enabled: !v,
+                    },
+                    success: function (response) {
+                        var result = response.responseText;
+                        window.alert("Python CGI called :\n" + result);
+                    },
+                    failure: function (response) {
+                        window.alert("Request Failed.");
+                    },
+                });
+            },
         });
 
         var c = {
             store: gridStore,
+            plugins: [enableColumn],
             colModel: new Ext.grid.ColumnModel({
                 defaults: {
                     sortable: true,
@@ -1179,28 +1231,31 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     height: 20,
                 },
                 columns: [
-                    {
-                        header: "ID",
-                        width: 30,
-                        dataIndex: "id",
-                    },
+                    // checkboxSelModel,
+                    enableColumn,
+                    // {
+                    //     header: "Enabled",
+                    //     width: 30,
+                    //     dataIndex: "enabled",
+                    // },
+                    // {
+                    //     header: "Index",
+                    //     width: 30,
+                    //     dataIndex: "id",
+                    // },
                     {
                         header: "Package Name",
-                        width: 100,
+                        width: 150,
                         dataIndex: "package",
                     },
                     {
                         header: "Version",
-                        width: 80,
+                        width: 100,
                         dataIndex: "version",
-                    },
-                    {
-                        header: "Description",
-                        width: 300,
-                        dataIndex: "description",
                     },
                 ],
             }),
+            selModel: new Ext.grid.RowSelectionModel(),
             viewConfig: {
                 forceFit: true,
                 onLoad: Ext.emptyFn,
@@ -1216,7 +1271,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             columnLines: true,
             frame: false,
             bbar: paging,
-            height: 200,
+            height: 385,
             cls: "resource-monitor-performance",
             listeners: {
                 scope: this,
@@ -1224,7 +1279,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     grid.getStore().load({
                         params: {
                             offset: 0,
-                            limit: 5,
+                            limit: 10,
                         },
                     });
                 },

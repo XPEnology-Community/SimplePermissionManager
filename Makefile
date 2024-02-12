@@ -58,6 +58,7 @@ SimplePermissionManager_extra_install:
 
 	install -m 755 src/cgi/synopkg-list-packages.cgi $(STAGING_DIR)/cgi/synopkg-list-packages.cgi
 	install -m 755 src/cgi/status.cgi $(STAGING_DIR)/cgi/status.cgi
+	install -m 755 src/cgi/update-package.cgi $(STAGING_DIR)/cgi/update-package.cgi
 
 	install -m 755 -d $(STAGING_DIR)/bin/
 	install -m 755 src/bin/spm-exec $(STAGING_DIR)/bin/spm-exec

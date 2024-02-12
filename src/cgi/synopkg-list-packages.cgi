@@ -7,6 +7,8 @@ import configparser
 
 from urllib.parse import parse_qs
 
+permissions_file = '/var/packages/SimplePermissionManager/etc/permissions.json'
+
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
@@ -14,6 +16,11 @@ def chunks(lst, n):
 
 def list_packages():
     packages = []
+    permissions = {}
+
+    if os.path.exists(permissions_file):
+        with open(permissions_file) as file:
+            permissions = json.load(file)
 
     directories = [d for d in os.listdir('/var/packages') if os.path.isdir('/var/packages/'+d)]
     for dir in directories:
@@ -32,7 +39,16 @@ def list_packages():
         if 'description' in config['root']:
             description = config['root']['description'].strip('"')
 
-        packages.append({'package': package, 'version': version, 'description': description})
+        enabled = False
+        if package in permissions and 'enabled' in permissions[package]:
+            enabled = permissions[package]['enabled']
+
+        packages.append({
+            'package': package,
+            'version': version,
+            'enabled': enabled,
+            'description': description
+        })
     packages = sorted(packages, key=lambda x: x['package'])
     for i in range(len(packages)):
         packages[i]['id'] = i+1

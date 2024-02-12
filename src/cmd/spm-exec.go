@@ -9,18 +9,20 @@ import (
 )
 
 type Permission struct {
-	UID  int    `json:"uid"`
-	GID  int    `json:"gid"`
-	User string `json:"user"`
+	UID     int    `json:"uid"`
+	GID     int    `json:"gid"`
+	User    string `json:"user"`
+	Package string `json:"package"`
+	Enabled string `json:"enabled"`
 }
 
-func loadPermissionConfig() ([]Permission, error) {
+func loadPermissionConfig() (map[string]Permission, error) {
 	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/permissions.json")
 	if err != nil {
 		return nil, err
 	}
 
-	var permissions []Permission
+	var permissions map[string]Permission
 	err = json.Unmarshal(fileContent, &permissions)
 	if err != nil {
 		return nil, err
