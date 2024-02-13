@@ -71,7 +71,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         spmStatus = {
             id: "active_status",
             xtype: "syno_displayfield",
-            value: "Unknown",
+            value: _V("ui", "status_unknown"),
             width: 140,
         };
         active = false;
@@ -83,13 +83,13 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             success: function (response) {
                 var data = Ext.decode(response.responseText);
                 if (data.active) {
-                    spmStatus.value = "Active";
+                    spmStatus.value = _V("ui", "status_active");
                     spmStatus.style = {
                         color: "green",
                     };
                     active = true;
                 } else {
-                    spmStatus.value = "Inactive";
+                    spmStatus.value = _V("ui", "status_inactive");
                 }
             },
             failure: function (response) {
@@ -97,7 +97,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             },
         });
         return new SYNO.ux.FieldSet({
-            title: "Status",
+            title: _V("ui", "status"),
             collapsible: true,
             items: [
                 {
@@ -106,7 +106,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     items: [
                         {
                             xtype: "syno_displayfield",
-                            value: "Status:",
+                            value: _V("ui", "status") + _T("common", "pure_colon"),
                             width: 140,
                         },
                         spmStatus,
@@ -114,7 +114,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                             id: "active_button",
                             xtype: "syno_button",
                             btnStyle: "blue",
-                            text: "Active",
+                            text: _V("ui", "active"),
                             hidden: active,
                             handler: this.onActive.bind(this),
                         },
@@ -123,7 +123,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             ],
         });
     },
-    // Create the display of API calls
+    // Create the display of config
     createDisplayConfig: function () {
         return new SYNO.ux.FieldSet({
             title: "Configure",
@@ -135,12 +135,13 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     items: [
                         {
                             xtype: "syno_displayfield",
-                            value: "Auto:",
-                            width: 100,
+                            value: _V("ui", "trust_signature") + _T("common", "pure_colon"),
+                            width: 140,
                         },
                         {
                             xtype: "syno_checkbox",
-                            boxLabel: "Activate",
+                            boxLabel: " ",
+                            id: "valid_signature",
                         },
                     ],
                 },
