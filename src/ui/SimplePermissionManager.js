@@ -20,6 +20,12 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     extend: "SYNO.SDS.AppWindow",
     appInstance: null,
     tabs: null,
+    onOpen: function (a) {
+        SynoCommunity.SimplePermissionManager.AppWindow.superclass.onOpen.call(
+            this,
+            a
+        );
+    },
     constructor: function (config) {
         this.appInstance = config.appInstance;
 
@@ -229,6 +235,32 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     console.log("error run EventScheduler task");
                     return;
                 }
+                this.deleteSchedulerTask();
+            },
+            scope: this,
+        });
+    },
+    runSchedulerTask: function () {
+        this.fetchSynoConfirmPWToken(
+            this.sendRunSchedulerTaskWebAPI.bind(this)
+        );
+    },
+    sendDeleteSchedulerTaskWebAPI: function (token) {
+        this.sendWebAPI({
+            api: "SYNO.Core.EventScheduler",
+            method: "delete",
+            version: 1,
+            params: {
+                task_name: "Active Simple Permission Manager",
+                SynoConfirmPWToken: token,
+            },
+            callback: function (success, message, data) {
+                console.log(success);
+                if (!success) {
+                    console.log("error delete EventScheduler task");
+                    return;
+                }
+
                 Ext.getCmp("confirm_password_dialog").close();
                 Ext.getCmp("active_button").hide();
                 Ext.getCmp("active_status").setValue("Active");
@@ -238,9 +270,9 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             scope: this,
         });
     },
-    runSchedulerTask: function () {
+    deleteSchedulerTask: function () {
         this.fetchSynoConfirmPWToken(
-            this.sendRunSchedulerTaskWebAPI.bind(this)
+            this.sendDeleteSchedulerTaskWebAPI.bind(this)
         );
     },
     // Call Active on click
@@ -627,11 +659,5 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         };
 
         return new SYNO.ux.GridPanel(c);
-    },
-    onOpen: function (a) {
-        SynoCommunity.SimplePermissionManager.AppWindow.superclass.onOpen.call(
-            this,
-            a
-        );
     },
 });
