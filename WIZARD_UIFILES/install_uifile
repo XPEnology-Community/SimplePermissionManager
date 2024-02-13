@@ -3,7 +3,7 @@
     "step_title": "Information",
     "items": [
       {
-        "desc": "Simple Permission Manager is xxx.<br><br>For more information, you can visit the <a target=\"_blank\" href=\"https://github.com/xxx\">Simple Permission Manager Github page</a>."
+        "desc": "Simple Permission Manager is used to approve priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.<br><br>For more information, you can visit the <a target=\"_blank\" href=\"https://github.com/xxx\">Simple Permission Manager Github page</a>."
       }
     ]
   }
