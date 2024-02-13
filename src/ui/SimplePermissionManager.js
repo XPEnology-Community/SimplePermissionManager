@@ -41,9 +41,15 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             });
 
             allTabs.push({
-                title: _V("ui", "permission"),
+                title: _V("ui", "packages"),
                 layout: "fit",
-                items: [this.createPackages(), this.createUsers()],
+                items: [this.createPackageGrid()],
+            });
+
+            allTabs.push({
+                title: _V("ui", "users"),
+                layout: "fit",
+                items: [this.createUserGrid()],
             });
 
             return allTabs;
@@ -55,7 +61,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 maximizable: true,
                 minimizable: true,
                 width: 640,
-                height: 580,
+                height: 510,
                 padding: "15px",
                 items: [
                     {
@@ -533,7 +539,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             url: localUrl,
             restful: true,
             root: "result",
-            idProperty: "uid",
+            idProperty: "name",
             fields: [
                 {
                     name: "enabled",
