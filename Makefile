@@ -48,14 +48,6 @@ SimplePermissionManager_extra_install:
 	done
 
 	install -m 755 -d $(STAGING_DIR)/cgi/
-	install -m 755 src/cgi/perl.cgi $(STAGING_DIR)/cgi/perl.cgi
-	install -m 755 src/cgi/python.cgi $(STAGING_DIR)/cgi/python.cgi
-	install -m 755 src/cgi/bash.cgi $(STAGING_DIR)/cgi/bash.cgi
-	install -m 755 src/cgi/externalapi.cgi $(STAGING_DIR)/cgi/externalapi.cgi
-	install -m 755 src/cgi/storepythonsqlapi.cgi $(STAGING_DIR)/cgi/storepythonsqlapi.cgi
-	install -m 755 src/cgi/storepythonsynoapi.cgi $(STAGING_DIR)/cgi/storepythonsynoapi.cgi
-	install -m 755 src/cgi/storebashratesapi.cgi $(STAGING_DIR)/cgi/storebashratesapi.cgi
-
 	install -m 755 src/cgi/list-packages.cgi $(STAGING_DIR)/cgi/list-packages.cgi
 	install -m 755 src/cgi/list-users.cgi $(STAGING_DIR)/cgi/list-users.cgi
 	install -m 755 src/cgi/status.cgi $(STAGING_DIR)/cgi/status.cgi
