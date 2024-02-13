@@ -5,3 +5,6 @@ index_title = "SimplePermissionManager"
 
 [ui]
 overview = "Overview"
+permission = "Permission"
+package = "Package"
+user = "User"

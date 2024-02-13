@@ -40,8 +40,8 @@ def list_packages():
             description = config['root']['description'].strip('"')
 
         enabled = False
-        if package in permissions and 'enabled' in permissions[package]:
-            enabled = permissions[package]['enabled']
+        if 'packages' in permissions and package in permissions["packages"] and 'enabled' in permissions["packages"][package]:
+            enabled = permissions["packages"][package]['enabled']
 
         packages.append({
             'package': package,

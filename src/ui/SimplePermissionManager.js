@@ -36,6 +36,12 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 ],
             });
 
+            allTabs.push({
+                title: _V("ui", "permission"),
+                layout: "fit",
+                items: [this.createPackages(), this.createUsers()],
+            });
+
             // Tab for Form components
             allTabs.push({
                 title: "Form Components",
@@ -57,13 +63,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             //     items: [this.createInteraction()],
             // });
 
-            // Tab for Stores 1
-            allTabs.push({
-                title: "Stores 1",
-                layout: "fit",
-                items: [this.createSynoStore(), this.createSqlStore()],
-            });
-
             // Tab for Stores 2
             allTabs.push({
                 title: "Stores 2",
@@ -80,7 +79,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 maximizable: true,
                 minimizable: true,
                 width: 640,
-                height: 640,
+                height: 580,
                 padding: "15px",
                 items: [
                     {
@@ -1115,10 +1114,10 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         return toolbar;
     },
 
-    // Create the display of Syno Store
-    createSynoStore: function () {
+    // Create the display of packages
+    createPackages: function () {
         return new SYNO.ux.FieldSet({
-            title: "Packages",
+            title: _V("ui", "package"),
             collapsible: true,
             autoHeight: true,
             items: [
@@ -1131,10 +1130,10 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         });
     },
 
-    // Create JSON Store grid calling python API
+    // Create JSON Store grid calling list packages API
     createPackageGrid: function () {
         var localUrl =
-            "/webman/3rdparty/SimplePermissionManager/cgi/synopkg-list-packages.cgi";
+            "/webman/3rdparty/SimplePermissionManager/cgi/list-packages.cgi";
 
         var gridStore = new SYNO.API.JsonStore({
             autoDestroy: true,
@@ -1189,13 +1188,14 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         //     },
         // });
         var enableColumn = new SYNO.ux.EnableColumn({
-            header: _T("common", "enabled"),
+            // header: _T("common", "enabled"),
             dataIndex: "enabled",
-            width: 60,
+            width: 20,
             align: "center",
-            bindRowClick: !0,
-            commitChanges: !0,
-            enableFastSelectAll: !0,
+            bindRowClick: true,
+            commitChanges: true,
+            disableSelectAll: true,
+            enableFastSelectAll: false,
             toggleRec: function(t) {
                 var v = t.get(this.dataIndex);
                 t.set(this.dataIndex, !v);
@@ -1211,7 +1211,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     },
                     success: function (response) {
                         var result = response.responseText;
-                        window.alert("Python CGI called :\n" + result);
+                        console.log("update-package.cgi response :\n" + result);
                     },
                     failure: function (response) {
                         window.alert("Request Failed.");
@@ -1252,6 +1252,155 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                         header: "Version",
                         width: 100,
                         dataIndex: "version",
+                    },
+                ],
+            }),
+            selModel: new Ext.grid.RowSelectionModel(),
+            viewConfig: {
+                forceFit: true,
+                onLoad: Ext.emptyFn,
+                listeners: {
+                    beforerefresh: function (f) {
+                        f.scrollTop = f.scroller.dom.scrollTop;
+                    },
+                    refresh: function (f) {
+                        f.scroller.dom.scrollTop = f.scrollTop;
+                    },
+                },
+            },
+            columnLines: true,
+            frame: false,
+            bbar: paging,
+            height: 385,
+            cls: "resource-monitor-performance",
+            listeners: {
+                scope: this,
+                render: function (grid) {
+                    grid.getStore().load({
+                        params: {
+                            offset: 0,
+                            limit: 10,
+                        },
+                    });
+                },
+            },
+        };
+
+        return new SYNO.ux.GridPanel(c);
+    },
+
+    // Create the display of users
+    createUsers: function () {
+        return new SYNO.ux.FieldSet({
+            title: _V("ui", "user"),
+            collapsible: true,
+            autoHeight: true,
+            items: [
+                {
+                    xtype: "syno_compositefield",
+                    hideLabel: true,
+                    items: [this.createUserGrid()],
+                },
+            ],
+        });
+    },
+
+    // Create JSON Store grid calling list user API
+    createUserGrid: function () {
+        var localUrl =
+            "/webman/3rdparty/SimplePermissionManager/cgi/list-users.cgi";
+
+        var gridStore = new SYNO.API.JsonStore({
+            autoDestroy: true,
+            url: localUrl,
+            restful: true,
+            root: "result",
+            idProperty: "uid",
+            fields: [
+                {
+                    name: "enabled",
+                    type: "boolean",
+                },
+                {
+                    name: "name",
+                    type: "string",
+                },
+                {
+                    name: "uid",
+                    type: "int",
+                },
+                {
+                    name: "gid",
+                    type: "int",
+                },
+            ],
+        });
+
+        var paging = new SYNO.ux.PagingToolbar({
+            store: gridStore,
+            displayInfo: true,
+            pageSize: 10,
+            refreshText: "Reload",
+        });
+
+        var enableColumn = new SYNO.ux.EnableColumn({
+            dataIndex: "enabled",
+            width: 20,
+            align: "center",
+            bindRowClick: true,
+            commitChanges: true,
+            disableSelectAll: true,
+            enableFastSelectAll: false,
+            toggleRec: function(t) {
+                var v = t.get(this.dataIndex);
+                t.set(this.dataIndex, !v);
+                t.json.enabled = !v;
+
+                Ext.Ajax.request({
+                    url: "/webman/3rdparty/SimplePermissionManager/cgi/update-user.cgi",
+                    method: "POST",
+                    timeout: 60000,
+                    jsonData: {
+                        name: t.json.name,
+                        enabled: !v,
+                    },
+                    success: function (response) {
+                        var result = response.responseText;
+                        console.log("update-user.cgi response :\n" + result);
+                    },
+                    failure: function (response) {
+                        window.alert("Request Failed.");
+                    },
+                });
+            },
+        });
+
+        var c = {
+            store: gridStore,
+            plugins: [enableColumn],
+            colModel: new Ext.grid.ColumnModel({
+                defaults: {
+                    sortable: true,
+                    menuDisabled: true,
+                    width: 100,
+                    height: 20,
+                },
+                columns: [
+                    enableColumn,
+                    {
+                        header: "User Name",
+                        width: 150,
+                        dataIndex: "name",
+                    },
+                    {
+                        header: "User ID",
+                        width: 50,
+                        dataIndex: "uid",
+                    },
+                    {
+                        header: "Group ID",
+                        width: 50,
+                        dataIndex: "gid",
                     },
                 ],
             }),

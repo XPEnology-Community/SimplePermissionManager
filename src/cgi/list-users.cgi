@@ -6,11 +6,23 @@ import pwd
 
 from urllib.parse import parse_qs
 
+permissions_file = '/var/packages/SimplePermissionManager/etc/permissions.json'
+
 def list_users():
+    permissions = {}
+
+    if os.path.exists(permissions_file):
+        with open(permissions_file) as file:
+            permissions = json.load(file)
+
     pwall = pwd.getpwall()
     users = []
     for user in pwall:
-        users.append({'name': user.pw_name, 'uid': user.pw_uid, 'gid': user.pw_gid})
+        enabled = False
+        if 'users' in permissions and user.pw_name in permissions["users"] and 'enabled' in permissions["users"][user.pw_name]:
+            enabled = permissions["users"][user.pw_name]['enabled']
+
+        users.append({'name': user.pw_name, 'uid': user.pw_uid, 'gid': user.pw_gid, 'enabled': enabled})
 
     users = sorted(users, key=lambda x: x['uid'])
     for i in range(len(users)):
@@ -46,7 +58,6 @@ def print_users():
     print(json.dumps(output, indent=4))
 
 if __name__ == '__main__':
-    print_users()
     print("Content-type: application/json\n")
     f = os.popen('/usr/syno/synoman/webman/modules/authenticate.cgi','r')
     user = f.read()

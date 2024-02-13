@@ -1,0 +1,10 @@
+[app]
+app_name = "权限管理器"
+description = "权限管理器"
+index_title = "权限管理器"
+
+[ui]
+overview = "概览"
+permission = "权限"
+package = "套件"
+user = "用户"

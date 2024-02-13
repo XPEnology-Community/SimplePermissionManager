@@ -8,27 +8,42 @@ import (
 	"syscall"
 )
 
-type Permission struct {
+type PackageKey = string
+type UserKey = string
+
+type Package struct {
 	UID     int    `json:"uid"`
 	GID     int    `json:"gid"`
 	User    string `json:"user"`
 	Package string `json:"package"`
-	Enabled string `json:"enabled"`
+	Enabled bool   `json:"enabled"`
 }
 
-func loadPermissionConfig() (map[string]Permission, error) {
+type User struct {
+	UID     int    `json:"uid"`
+	GID     int    `json:"gid"`
+	User    string `json:"user"`
+	Enabled bool   `json:"enabled"`
+}
+
+type Permission struct {
+	Packages map[PackageKey]Package `json:"packages"`
+	Users    map[UserKey]User       `json:"users"`
+}
+
+func loadPermissionConfig() (*Permission, error) {
 	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/permissions.json")
 	if err != nil {
 		return nil, err
 	}
 
-	var permissions map[string]Permission
+	var permissions Permission
 	err = json.Unmarshal(fileContent, &permissions)
 	if err != nil {
 		return nil, err
 	}
 
-	return permissions, nil
+	return &permissions, nil
 }
 
 func isPermissionOK(uid int) bool {
@@ -37,9 +52,16 @@ func isPermissionOK(uid int) bool {
 		_, _ = fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		return false
 	}
-	for _, p := range permissions {
+
+	for _, p := range permissions.Packages {
 		if p.UID == uid {
-			return true
+			return p.Enabled
+		}
+	}
+
+	for _, u := range permissions.Users {
+		if u.UID == uid {
+			return u.Enabled
 		}
 	}
 	return false

@@ -7,30 +7,29 @@ import sys
 
 permissions_file = '/var/packages/SimplePermissionManager/etc/permissions.json'
 
-def get_package(package):
+def get_user(user_name):
     pwall = pwd.getpwall()
 
-    # for packages which not in /etc/passwd, default user is root
     name = 'root'
     uid = 0
     gid = 0
 
     for user in pwall:
-        if user.pw_dir == '/var/packages/%s/home' % package:
+        if user.pw_name == user_name:
             name = user.pw_name
             uid = user.pw_uid
             gid = user.pw_gid
 
-    return {'name': name, 'uid': uid, 'gid': gid, 'package': package}
+    return {'name': name, 'uid': uid, 'gid': gid}
 
-def update_package(package):
+def update_user(user):
     permissions = {'users':{},'packages':{}}
 
     if os.path.exists(permissions_file):
         with open(permissions_file) as file:
             permissions = json.load(file)
 
-    permissions['packages'][package['package']] = package
+    permissions['users'][user['name']] = user
 
     file = open(permissions_file, 'w')
     file.write(json.dumps(permissions, indent=4))
@@ -44,10 +43,10 @@ def process():
     body = sys.stdin.read(content_len)
     request = json.loads(body)
 
-    package = get_package(request['package'])
-    package['enabled'] = request['enabled']
+    user = get_user(request['name'])
+    user['enabled'] = request['enabled']
 
-    update_package(package)
+    update_user(user)
 
 if __name__ == '__main__':
     print("Content-type: application/json\n")
