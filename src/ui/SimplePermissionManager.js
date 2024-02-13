@@ -163,8 +163,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 password: Ext.getCmp("confirm_password").getValue(),
             },
             callback: function (success, response) {
-                console.log(success);
-                console.log(response);
                 if (!success) {
                     window.alert("invalid admin password");
                     return;
@@ -204,7 +202,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 SynoConfirmPWToken: token,
             },
             callback: function (success, message) {
-                console.log(success);
                 if (!success) {
                     console.log("error create EventScheduler task");
                     return;
@@ -230,7 +227,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 SynoConfirmPWToken: token,
             },
             callback: function (success, message, data) {
-                console.log(success);
                 if (!success) {
                     console.log("error run EventScheduler task");
                     return;
@@ -255,7 +251,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 SynoConfirmPWToken: token,
             },
             callback: function (success, message, data) {
-                console.log(success);
                 if (!success) {
                     console.log("error delete EventScheduler task");
                     return;
