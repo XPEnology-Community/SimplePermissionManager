@@ -40,3 +40,9 @@ gpg --detach-sign hello-world.sh
     ]
 }
 ```
+
+## Run Signatured Command
+
+```
+spm-exec /path/to/phello-world.sh
+```

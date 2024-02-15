@@ -86,6 +86,10 @@ type PublicKey struct {
 	Signature string `json:"signature"`
 }
 
+type Config struct {
+	TrustSignature bool `json:"trustSignature"`
+}
+
 func loadPermissionConfig() (*Permission, error) {
 	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/permissions.json")
 	if err != nil {
@@ -99,6 +103,21 @@ func loadPermissionConfig() (*Permission, error) {
 	}
 
 	return &permissions, nil
+}
+
+func loadConfig() (*Config, error) {
+	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/config.json")
+	if err != nil {
+		return nil, err
+	}
+
+	var config Config
+	err = json.Unmarshal(fileContent, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
 }
 
 func loadSignature(path string) (*Signature, error) {
@@ -221,10 +240,26 @@ func init() {
 		os.Exit(1)
 	}
 
-	if !isPermissionOK(uid) && !isSignatureOK() {
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
-		os.Exit(1)
+	if isPermissionOK(uid) {
+		return
 	}
+
+	config, err := loadConfig()
+	if err != nil {
+		goto ErrPermission
+	}
+
+	if !config.TrustSignature {
+		goto ErrPermission
+	}
+
+	if isSignatureOK() {
+		return
+	}
+
+ErrPermission:
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
+	os.Exit(1)
 }
 
 func main() {
