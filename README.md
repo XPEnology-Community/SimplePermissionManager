@@ -8,25 +8,27 @@
 gpg --output public.pgp --export 'Hello World <a@b.com>'
 ```
 
-2. Sign by root key
+2. Sign by root key(Contact Jim)
 
 ```shell
-gpg --detach-sign public.pgp
+gpg --output public.pgp.sig --detach-sign public.pgp
 ```
 
 3. Save middle public key signature
 
-Save `public.pgp` and `public.pgp.pgp`
+Save `public.pgp` and `public.pgp.sig`
 
 ## Generate Binary Signature
 
 1. Sign by middle key
 
 ```shell
-gpg --detach-sign hello-world.sh
+gpg --output hello-world.sh.gpg.sig --detach-sign hello-world.sh
 ```
 
 2. Save binary signature
+
+File name: `hello-world.sh.sig`
 
 ```json
 {
@@ -41,8 +43,33 @@ gpg --detach-sign hello-world.sh
 }
 ```
 
+### Sign Script
+
+```shell
+file=hello-world.sh
+
+pub_key=$(base64 -w 0 public.pgp)
+pub_sig=$(base64 -w 0 public.pgp.sig)
+
+gpg --output "$file".gpg.sig --detach-sign "$file"
+sig=$(base64 -w 0 "$file".gpg.sig)
+
+cat << EOF > "$file".sig
+{
+    "version": 1,
+    "signature": "${sig}",
+    "publicKeys": [
+        {
+            "publicKey": "${pub_key}",
+            "signature": "${pub_sig}"
+        }
+    ]
+}
+EOF
+```
+
 ## Run Signatured Command
 
 ```
-spm-exec /path/to/phello-world.sh
+spm-exec /path/to/hello-world.sh
 ```
