@@ -627,18 +627,18 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 columns: [
                     enableColumn,
                     {
-                        header: "User Name",
-                        width: 150,
-                        dataIndex: "name",
-                    },
-                    {
                         header: "User ID",
                         width: 50,
                         dataIndex: "uid",
                     },
                     {
+                        header: "User Name",
+                        width: 100,
+                        dataIndex: "name",
+                    },
+                    {
                         header: "Group ID",
-                        width: 50,
+                        width: 100,
                         dataIndex: "gid",
                     },
                 ],
