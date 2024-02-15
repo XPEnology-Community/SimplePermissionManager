@@ -219,7 +219,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 notify_if_error: false,
                 operation_type: "script",
                 operation:
-                    "chown root:root /var/packages/SimplePermissionManager/target/bin/spm-exec && chmod +s /var/packages/SimplePermissionManager/target/bin/spm-exec",
+                    "/var/packages/SimplePermissionManager/target/bin/spm-update",
                 SynoConfirmPWToken: token,
             },
             callback: function (success, message) {

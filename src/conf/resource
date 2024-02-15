@@ -1,7 +1,4 @@
 {
-  "usr-local-linker": {
-    "bin": ["bin/spm-exec"]
-  },
   "webservice": {
     "services": [
       {
