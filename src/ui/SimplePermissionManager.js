@@ -110,7 +110,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         });
         return new SYNO.ux.FieldSet({
             title: _V("ui", "status"),
-            collapsible: true,
+            collapsible: false,
             items: [
                 {
                     xtype: "syno_compositefield",
@@ -137,9 +137,22 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     },
     // Create the display of config
     createDisplayConfig: function () {
+        config = {};
+        Ext.Ajax.request({
+            url: "/webman/3rdparty/SimplePermissionManager/cgi/config.cgi",
+            method: "GET",
+            async: false,
+            timeout: 60000,
+            success: function (response) {
+                config = Ext.decode(response.responseText);
+            },
+            failure: function (response) {
+                window.alert("Fetch Config Failed.");
+            },
+        });
         return new SYNO.ux.FieldSet({
             title: "Configure",
-            collapsible: true,
+            collapsible: false,
             items: [
                 {
                     xtype: "syno_compositefield",
@@ -154,6 +167,8 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                             xtype: "syno_checkbox",
                             boxLabel: " ",
                             id: "valid_signature",
+                            checked: config.trustSignature,
+                            readOnly: true,
                         },
                     ],
                 },

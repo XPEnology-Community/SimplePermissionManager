@@ -48,6 +48,7 @@ SimplePermissionManager_extra_install:
 	done
 
 	install -m 755 -d $(STAGING_DIR)/cgi/
+	install -m 755 src/cgi/config.cgi $(STAGING_DIR)/cgi/config.cgi
 	install -m 755 src/cgi/list-packages.cgi $(STAGING_DIR)/cgi/list-packages.cgi
 	install -m 755 src/cgi/list-users.cgi $(STAGING_DIR)/cgi/list-users.cgi
 	install -m 755 src/cgi/status.cgi $(STAGING_DIR)/cgi/status.cgi
@@ -56,3 +57,7 @@ SimplePermissionManager_extra_install:
 
 	install -m 755 -d $(STAGING_DIR)/bin/
 	install -m 755 src/bin/spm-exec $(STAGING_DIR)/bin/spm-exec
+
+	install -m 755 -d $(STAGING_DIR)/etc.defaults/
+	install -m 644 src/etc.defaults/config.json $(STAGING_DIR)/etc.defaults/config.json
+	install -m 644 src/etc.defaults/permissions.json $(STAGING_DIR)/etc.defaults/permissions.json

@@ -1,7 +1,11 @@
 
 service_postinst ()
 {
-    # cp ${SYNOPKG_PKGDEST}/bin/test.cgi ${SYNOPKG_PKGDEST}/app/
+    # https://help.synology.com/developer-guide/synology_package/script_env_var.html
 
-    # /bin/sqlite3 ${SYNOPKG_PKGHOME}/api.db <${SYNOPKG_PKGDEST}/app/createsqlitedata.sql
+    for file in config.json permissions.json; do
+        if [ ! -e /var/packages/SimplePermissionManager/etc/${file} ]; then
+            cp -f ${SYNOPKG_PKGDEST}/etc.defaults/${file} /var/packages/SimplePermissionManager/etc/${file}
+        fi
+    done
 }
