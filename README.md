@@ -51,12 +51,15 @@ file=hello-world.sh
 pub_key=$(base64 -w 0 public.pgp)
 pub_sig=$(base64 -w 0 public.pgp.sig)
 
+sha256=$(sha256sum $file | awk '{print $1}')
 gpg --output "$file".gpg.sig --detach-sign "$file"
 sig=$(base64 -w 0 "$file".gpg.sig)
+rm -f "$file".gpg.sig
 
 cat << EOF > "$file".sig
 {
     "version": 1,
+    "sha256": "${sha256}",
     "signature": "${sig}",
     "publicKeys": [
         {
