@@ -4,6 +4,8 @@ SPK_REV = 1
 SPK_ICON = src/SimplePermissionManager.png
 WIZARDS_DIR = src/wizard
 DSM_UI_DIR = ui
+# workaround for creating package icons, while ADMIN_URL and SERVICE_PORT is none
+DSM_UI_CONFIG = src/ui/config
 
 MAINTAINER = jim3ma
 
