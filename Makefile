@@ -9,7 +9,7 @@ DSM_UI_CONFIG = src/ui/config
 
 MAINTAINER = jim3ma
 
-DESCRIPTION = Simple Permission Manager is used to approve priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions
+DESCRIPTION = Simple Permission Manager is used to approve priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.
 STARTABLE = no
 DISPLAY_NAME = Simple Permission Manager
 
