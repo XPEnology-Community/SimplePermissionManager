@@ -1,0 +1,10 @@
+[
+  {
+    "step_title": "套件信息",
+    "items": [
+      {
+        "desc": "Simple Permission Manager 用于自动批准其他套件的特权命令, 一些驱动套件需要特权命令才可正常执行.<br><br>想了解更多信息，可以访问 <a target=\"_blank\" href=\"https://github.com/xxx\">Simple Permission Manager Github 网页</a>.<br><br>此套件的 <a href=\"https://www.flaticon.com/free-icons/approved\" title=\"approved icons\">Approved icons 由 Freepik - Flaticon 创建</a>"
+      }
+    ]
+  }
+]
