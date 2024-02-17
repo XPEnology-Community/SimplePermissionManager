@@ -10,10 +10,12 @@ DSM_UI_CONFIG = src/ui/config
 MAINTAINER = jim3ma
 
 DESCRIPTION = Simple Permission Manager is used to approve some packages' priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.
-DESCRIPTION_CHS = Simple Permission Manager 用于自动批准其他套件的特权命令, 一些驱动套件需要特权命令才可正常执行.
+DESCRIPTION_CHS = 权限管理器用于自动批准其他套件的特权命令, 一些驱动套件需要特权命令才可正常执行.
+
+DISPLAY_NAME = Simple Permission Manager
+DISPLAY_NAME_CHS = 权限管理器
 
 STARTABLE = no
-DISPLAY_NAME = Simple Permission Manager
 
 HOMEPAGE = https://github.com/jim3ma/todo
 
