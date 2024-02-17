@@ -1,8 +1,8 @@
 SPK_NAME = SimplePermissionManager
-SPK_VERS = 0.2
+SPK_VERS = 1.0
 SPK_REV = 1
 SPK_ICON = src/SimplePermissionManager.png
-WIZARDS_DIR = WIZARD_UIFILES
+WIZARDS_DIR = src/wizard
 DSM_UI_DIR = ui
 
 MAINTAINER = jim3ma
@@ -12,8 +12,6 @@ STARTABLE = no
 DISPLAY_NAME = Simple Permission Manager
 
 HOMEPAGE = https://github.com/jim3ma/todo
-
-ADMIN_URL = /SimplePermissionManager/
 
 CONF_DIR = src/conf
 SYSTEM_GROUP = http
