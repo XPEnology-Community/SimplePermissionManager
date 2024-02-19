@@ -5,6 +5,7 @@ index_title = "权限管理器"
 
 [ui]
 overview = "概览"
+configure = "配置"
 permission = "权限"
 package = "套件"
 packages = "套件"

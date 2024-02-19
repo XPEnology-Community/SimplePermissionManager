@@ -1,6 +1,6 @@
 SPK_NAME = SimplePermissionManager
 SPK_VERS = 1.0
-SPK_REV = 1
+SPK_REV = 2
 SPK_ICON = src/SimplePermissionManager.png
 WIZARDS_DIR = src/wizard
 DSM_UI_DIR = ui
@@ -46,7 +46,7 @@ SimplePermissionManager_extra_install:
 		install -m 644 src/ui/help/$${language}/SimplePermissionManager_index.html $(STAGING_DIR)/ui/help/$${language}/SimplePermissionManager_index.html; \
 	done
 	install -m 755 -d $(STAGING_DIR)/ui/texts
-	for language in enu; do \
+	for language in chs enu; do \
 		install -m 755 -d $(STAGING_DIR)/ui/texts/$${language}; \
 		install -m 644 src/ui/texts/$${language}/strings $(STAGING_DIR)/ui/texts/$${language}/strings; \
 	done

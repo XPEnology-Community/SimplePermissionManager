@@ -151,7 +151,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             },
         });
         return new SYNO.ux.FieldSet({
-            title: "Configure",
+            title: _V("ui", "configure"),
             collapsible: false,
             items: [
                 {

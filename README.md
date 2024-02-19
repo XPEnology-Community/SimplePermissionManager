@@ -74,5 +74,18 @@ EOF
 ## Run Signatured Command
 
 ```
+# check permission first
+if [ ! -e /usr/local/bin/spm-exec ]; then
+    echo "ERROR: /usr/local/bin/spm-exec not found. Please install SimplePermissionManager package and active it."
+    exit 1
+fi
+
+st=$(stat -c "%U %G %a" /usr/local/bin/spm-exec)
+if [ ! "$st" = "root root 6755" ]; then
+    echo "ERROR: /usr/local/bin/spm-exec permission is not ready. Please active SimplePermissionManager."
+    exit 1
+fi
+
+# execute command
 spm-exec /path/to/hello-world.sh
 ```
