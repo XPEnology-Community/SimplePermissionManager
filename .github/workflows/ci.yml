@@ -15,6 +15,10 @@ jobs:
         run: |
           git clone https://github.com/SynoCommunity/spksrc.git /home/runner/work/spksrc
           docker pull ghcr.io/synocommunity/spksrc
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
       - name: Restore cached Primes
         id: cache-primes-restore
         uses: actions/cache/restore@v4
@@ -24,10 +28,14 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-spksrc-primes
-      - name: Build Simple Permission Manager
+      - name: Build Binary
         run: |
           workdir=$(pwd)
-          (cd $workdir/src/cmd && go build -o ../bin/spm-exec spm-exec.go)
+          (cd $workdir/src/cmd && go build -ldflags="-s -w" -o ../bin/spm-exec spm-exec.go)
+          upx -9 $workdir/src/bin/spm-exec
+      - name: Build Package
+        run: |
+          workdir=$(pwd)
           docker run -v /home/runner/work/spksrc:/spksrc \
               -v $workdir:/spksrc/spk/simplepermissionmanager \
               -v $workdir/packages:/spksrc/packages \
