@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rm -f /usr/local/bin/spm-exec
+
+cp /var/packages/SimplePermissionManager/target/bin/spm-exec /usr/local/bin/spm-exec
+
+chown root:root /usr/local/bin/spm-exec
+chmod 6755 /usr/local/bin/spm-exec
