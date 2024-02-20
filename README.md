@@ -1,6 +1,22 @@
 # Simple Permission Manager
 
-## Generate Middle Public Key Signature
+## Manually Approve Package Guide
+
+1. Open `Simple Permission Manager` in DSM
+2. Click `Package` in tab
+3. Enable target package by clicking checkbox
+
+## Manually Approve User Guide
+
+1. Open `Simple Permission Manager` in DSM
+2. Click `User` in tab
+3. Enable target user by clicking checkbox
+
+## Auto Approve Guide
+
+### Generate Middle Public Key Signature
+
+> Prepare gpg key before the following steps
 
 1. Export middle public key
 
@@ -8,7 +24,7 @@
 gpg --output public.pgp --export 'Hello World <a@b.com>'
 ```
 
-2. Sign by root key(Contact Jim)
+2. Send public key to Jim to sign by root key
 
 ```shell
 gpg --output public.pgp.sig --detach-sign public.pgp
@@ -18,7 +34,7 @@ gpg --output public.pgp.sig --detach-sign public.pgp
 
 Save `public.pgp` and `public.pgp.sig`
 
-## Generate Binary Signature
+### Generate Binary Signature
 
 1. Sign by middle key
 
@@ -43,7 +59,7 @@ File name: `hello-world.sh.sig`
 }
 ```
 
-### Sign Script
+#### Sign Script
 
 ```shell
 file=hello-world.sh
@@ -71,7 +87,7 @@ cat << EOF > "$file".sig
 EOF
 ```
 
-## Run Signatured Command
+## Run Command in Packages
 
 ```
 # check permission first
@@ -86,6 +102,6 @@ if [ ! "$st" = "root root 6755" ]; then
     exit 1
 fi
 
-# execute command
+# execute target command
 spm-exec /path/to/hello-world.sh
 ```
