@@ -17,7 +17,7 @@ DISPLAY_NAME_CHS = 权限管理器
 
 STARTABLE = no
 
-HOMEPAGE = https://github.com/jim3ma/todo
+HOMEPAGE = https://github.com/XPEnology-Community/SimplePermissionManager
 
 CONF_DIR = src/conf
 SYSTEM_GROUP = http
