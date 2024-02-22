@@ -11,7 +11,8 @@ import (
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
 
-const rootPubKey = `mQINBGXMuq8BEAC12lMEbGu7v4Agiju5LuacIyHTUKxEEdwybNX2Xyog67otSePnr1uC45yn2HST
+var rootPubKeys = []string{
+	`mQINBGXMuq8BEAC12lMEbGu7v4Agiju5LuacIyHTUKxEEdwybNX2Xyog67otSePnr1uC45yn2HST
 whKI34pDpv+74Myo6vIchH7kWB34xVwisEs5cGOzi48Nn7tjDxo7tI+CmA/KrsE04pouqttIqxmq
 fwnw3c6AEkykBiwXLBnc9AwSF50E8HjQ+fSAWj+tb1f+i2YoM1cpggEv3EQfXWsBOAay4A8CXZ2p
 txKCtiSnCzngLP5gw6na84q8vh7HdzwwoN4ehOO7vUyltO9KpMH/xAiXma3Sbx+nktrv0GDpo+1w
@@ -50,7 +51,8 @@ vXGlmi8wZzfN2ZhhU2AV6R3Sl02eB0JvdvKkynkMC1bsCH7P3mneYULCiuyCPX0f7kM9lnyeiGXm
 +x5cYOrm9fstuwT43Oqt+UuSZoNXxYO3ZNvM4pbhAicritWovAd4hls7jIQPd9LxmBfHMd5uS9jC
 NAkgP6Sd1sEoRzqiC6LjoWCrTlUZ9VqgaHTLSdHTV+djpakVEbmGBnk1P51bqb2h1oD/fifAJTWR
 qqxyiIl4dw96SRCayb+C2D+yU5xmnbVExGja+1b5NLFEanovhyaNJreeMMhANhtzwJBgE07Swy4o
-nsGxT6p6HG6cxQIG4VweQuVvXe5vjdgMrD2lmhd0uYNVtuSsycs=`
+nsGxT6p6HG6cxQIG4VweQuVvXe5vjdgMrD2lmhd0uYNVtuSsycs=`,
+}
 
 type PackageKey = string
 type UserKey = string
@@ -187,6 +189,18 @@ func isSignatureMatchedBase64(pubKey string, data []byte, signature string) erro
 }
 
 func verifySignature(signature *Signature, data []byte) error {
+	var err error
+	for _, pk := range rootPubKeys {
+		err = verifySignatureBySingleRootKey(pk, signature, data)
+		if err == nil {
+			return nil
+		}
+	}
+
+	return err
+}
+
+func verifySignatureBySingleRootKey(rootPubKey string, signature *Signature, data []byte) error {
 	pubKey := rootPubKey
 	for _, pk := range signature.PublicKeys {
 		pkData, err := base64.StdEncoding.DecodeString(pk.PublicKey)
