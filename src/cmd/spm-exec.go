@@ -6,9 +6,17 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+)
+
+var (
+	etcDir = "/var/packages/SimplePermissionManager/etc"
+
+	permissionsPath = path.Join(etcDir, "permissions.json")
+	configPath      = path.Join(etcDir, "config.json")
 )
 
 var rootPubKeys = []string{
@@ -93,7 +101,7 @@ type Config struct {
 }
 
 func loadPermissionConfig() (*Permission, error) {
-	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/permissions.json")
+	fileContent, err := os.ReadFile(permissionsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +116,7 @@ func loadPermissionConfig() (*Permission, error) {
 }
 
 func loadConfig() (*Config, error) {
-	fileContent, err := os.ReadFile("/var/packages/SimplePermissionManager/etc/config.json")
+	fileContent, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -217,14 +225,8 @@ func verifySignatureBySingleRootKey(rootPubKey string, signature *Signature, dat
 	return isSignatureMatchedBase64(pubKey, data, signature.Signature)
 }
 
-func isSignatureOK() bool {
-	path := os.Args[1] + ".sig"
-	stat, _ := os.Stat(path)
-	if stat == nil {
-		return false
-	}
-
-	signature, err := loadSignature(path)
+func isSignatureOK(sigPath string) bool {
+	signature, err := loadSignature(sigPath)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "load signature failed: %s\n", err)
 		return false
@@ -243,6 +245,11 @@ func isSignatureOK() bool {
 }
 
 func init() {
+	if len(os.Args) < 2 {
+		_, _ = fmt.Fprintf(os.Stderr, "missing command")
+		os.Exit(1)
+	}
+
 	uid := os.Getuid()
 	if uid == 0 {
 		return
@@ -258,18 +265,34 @@ func init() {
 		return
 	}
 
-	config, err := loadConfig()
+	var (
+		sigPath string
+		config  *Config
+		err     error
+	)
+
+	sigPath = os.Args[1] + ".sig"
+	stat, _ := os.Stat(sigPath)
+	if stat == nil {
+		_, _ = fmt.Fprintf(os.Stderr, "user with uid %d is not in permitted list and there is no signature for %s\n", uid, os.Args[1])
+		goto ErrPermission
+	}
+
+	config, err = loadConfig()
 	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		goto ErrPermission
 	}
 
 	if !config.TrustSignature {
+		_, _ = fmt.Fprintf(os.Stderr, "TrustSignature feature is disabled\n")
 		goto ErrPermission
 	}
 
-	if isSignatureOK() {
+	if isSignatureOK(sigPath) {
 		return
 	}
+	_, _ = fmt.Fprintf(os.Stderr, "%s signature is not match\n", os.Args[1])
 
 ErrPermission:
 	_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
@@ -277,11 +300,6 @@ ErrPermission:
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("missing command")
-		os.Exit(1)
-	}
-
 	subProcess := exec.Command(os.Args[1], os.Args[2:]...)
 	subProcess.Stdin = os.Stdin
 	subProcess.Stdout = os.Stdout
