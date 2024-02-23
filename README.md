@@ -1,5 +1,7 @@
 # Simple Permission Manager
 
+Simple Permission Manager is used to approve some packages' priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.
+
 ## Manually Approve Package Guide
 
 1. Open `Simple Permission Manager` in DSM
@@ -21,7 +23,7 @@
 1. Export middle public key
 
 ```shell
-gpg --output public.pgp --export 'Hello World <a@b.com>'
+gpg --output public.pgp --export 'Hello World <hello@world.com>'
 ```
 
 2. Send public key to Jim to sign by root key
