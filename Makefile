@@ -1,6 +1,6 @@
 SPK_NAME = SimplePermissionManager
 SPK_VERS = 1.0
-SPK_REV = 4
+SPK_REV = 5
 SPK_ICON = src/SimplePermissionManager.png
 WIZARDS_DIR = src/wizard
 DSM_UI_DIR = ui
