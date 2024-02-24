@@ -122,8 +122,10 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             handler: this.onActive.bind(this),
         };
 
-        if (spmStatus.major == 7 && spmStatus.minor == 0){
-            activeItem.handler = this.onActiveDirectly.bind(this);
+        if (spmStatus.major == 7){
+            if (spmStatus.minor == 0 || spmStatus.minor == 1){
+                activeItem.handler = this.onActiveDirectly.bind(this);
+            }
         }
 
         return new SYNO.ux.FieldSet({
