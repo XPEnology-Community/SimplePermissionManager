@@ -43,6 +43,7 @@ jobs:
       - name: Build Binary
         run: |
           workdir=$(pwd)
+          export CGO_ENABLED=0
           export GOARCH=${{ matrix.go_arch }}
           (cd $workdir/src/cmd && go build -ldflags="-s -w" -o ../bin/spm-exec spm-exec.go)
           upx -9 $workdir/src/bin/spm-exec
