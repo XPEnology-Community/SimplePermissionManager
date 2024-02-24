@@ -5,6 +5,18 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+        - "x64-7.0"
+        - "aarch64-7.0"
+        include:
+        - target: x64-7.0
+          dsm_ver: 7.0
+          go_arch: amd64
+        - target: aarch64-7.0
+          dsm_ver: 7.0
+          go_arch: arm64
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
@@ -27,10 +39,11 @@ jobs:
             /home/runner/work/spksrc/distrib
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-spksrc-primes
+          key: ${{ runner.os }}-spksrc-primes-${{ matrix.target }}
       - name: Build Binary
         run: |
           workdir=$(pwd)
+          export GOARCH=${{ matrix.go_arch }}
           (cd $workdir/src/cmd && go build -ldflags="-s -w" -o ../bin/spm-exec spm-exec.go)
           upx -9 $workdir/src/bin/spm-exec
       - name: Build Package
@@ -41,7 +54,7 @@ jobs:
               -v $workdir/packages:/spksrc/packages \
               -w /spksrc/spk/simplepermissionmanager \
               ghcr.io/synocommunity/spksrc \
-              make arch-x64-7.2
+              make arch-${{ matrix.target }}
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
