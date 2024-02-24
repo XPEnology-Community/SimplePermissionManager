@@ -3,6 +3,8 @@
 import json
 import os
 import stat
+import io
+import configparser
 
 from pathlib import Path
 
@@ -33,7 +35,23 @@ if __name__ == '__main__':
             if not (stat.S_IRWXU & file_mode):
                 acvite = False
 
-        print(json.dumps({ 'active': acvite }, indent=4))
+        version_path = '/etc/VERSION'
+        version_str = '[root]\n' + open(version_path, 'r').read()
+        fp = io.StringIO(version_str)
+        config = configparser.RawConfigParser()
+        config.read_file(fp)
+
+        major = config['root']['major'].strip('"')
+        minor = config['root']['minor'].strip('"')
+        base = config['root']['base'].strip('"')
+
+        print(json.dumps(
+            {
+                'active': acvite,
+                'major': major,
+                'minor': minor,
+                'base': base,
+            }, indent=4))
     # reject in case of no authentication
     else:
         print ("Security : no user authenticated")

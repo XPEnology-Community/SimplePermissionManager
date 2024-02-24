@@ -80,34 +80,52 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
     },
     // Create the display of status
     createDisplayStatus: function () {
-        spmStatus = {
+        spmStatusItem = {
             id: "active_status",
             xtype: "syno_displayfield",
             value: _V("ui", "status_unknown"),
             width: 140,
         };
-        active = false;
+        spmStatus = {
+            active: false,
+            major: 0,
+            minor: 0,
+            base: 0,
+        }
         Ext.Ajax.request({
             url: "/webman/3rdparty/SimplePermissionManager/cgi/status.cgi",
             method: "GET",
             async: false,
             timeout: 60000,
             success: function (response) {
-                var data = Ext.decode(response.responseText);
-                if (data.active) {
-                    spmStatus.value = _V("ui", "status_active");
-                    spmStatus.style = {
+                spmStatus = Ext.decode(response.responseText);
+                if (spmStatus.active) {
+                    spmStatusItem.value = _V("ui", "status_active");
+                    spmStatusItem.style = {
                         color: "green",
                     };
-                    active = true;
                 } else {
-                    spmStatus.value = _V("ui", "status_inactive");
+                    spmStatusItem.value = _V("ui", "status_inactive");
                 }
             },
             failure: function (response) {
                 window.alert("Fetch Status Failed.");
             },
         });
+
+        activeItem = {
+            id: "active_button",
+            xtype: "syno_button",
+            btnStyle: "blue",
+            text: _V("ui", "active"),
+            hidden: spmStatus.active,
+            handler: this.onActive.bind(this),
+        };
+
+        if (spmStatus.major == 7 && spmStatus.minor == 0){
+            activeItem.handler = this.onActiveDirectly.bind(this);
+        }
+
         return new SYNO.ux.FieldSet({
             title: _V("ui", "status"),
             collapsible: false,
@@ -121,15 +139,8 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                             value: _V("ui", "status") + _T("common", "pure_colon"),
                             width: 140,
                         },
-                        spmStatus,
-                        {
-                            id: "active_button",
-                            xtype: "syno_button",
-                            btnStyle: "blue",
-                            text: _V("ui", "active"),
-                            hidden: active,
-                            handler: this.onActive.bind(this),
-                        },
+                        spmStatusItem,
+                        activeItem,
                     ],
                 },
             ],
@@ -204,34 +215,51 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         });
     },
     sendCreateSchedulerTaskWebAPI: function (token) {
-        this.sendWebAPI({
-            api: "SYNO.Core.EventScheduler.Root",
+        params = {
+            task_name: "Active Simple Permission Manager",
+            owner: { 0: "root" },
+            event: "bootup",
+            enable: true,
+            depend_on_task: "",
+            notify_enable: false,
+            notify_mail: "",
+            notify_if_error: false,
+            operation_type: "script",
+            operation:
+                "/var/packages/SimplePermissionManager/target/bin/spm-update",
+        };
+
+        if (token != "") {
+            params.SynoConfirmPWToken = token
+        }
+
+        args = {
+            // api: "SYNO.Core.EventScheduler.Root",
             method: "create",
             version: 1,
-            params: {
-                task_name: "Active Simple Permission Manager",
-                owner: { 0: "root" },
-                event: "bootup",
-                enable: true,
-                depend_on_task: "",
-                notify_enable: false,
-                notify_mail: "",
-                notify_if_error: false,
-                operation_type: "script",
-                operation:
-                    "/var/packages/SimplePermissionManager/target/bin/spm-update",
-                SynoConfirmPWToken: token,
-            },
+            params: params,
             callback: function (success, message) {
                 if (!success) {
                     console.log("error create EventScheduler task");
                     return;
                 }
 
-                this.runSchedulerTask();
+                if (token != "") {
+                    this.runSchedulerTask();
+                } else {
+                    this.sendRunSchedulerTaskWebAPI("");
+                }
             },
             scope: this,
-        });
+        }
+
+        if (token != "") {
+            args.api = "SYNO.Core.EventScheduler.Root"
+        } else {
+            args.api = "SYNO.Core.EventScheduler"
+        }
+
+        this.sendWebAPI(args);
     },
     createAndRunSchedulerTask: function () {
         this.fetchSynoConfirmPWToken(
@@ -239,23 +267,32 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         );
     },
     sendRunSchedulerTaskWebAPI: function (token) {
-        this.sendWebAPI({
+        args = {
             api: "SYNO.Core.EventScheduler",
             method: "run",
             version: 1,
             params: {
                 task_name: "Active Simple Permission Manager",
-                SynoConfirmPWToken: token,
             },
             callback: function (success, message, data) {
                 if (!success) {
                     console.log("error run EventScheduler task");
                     return;
                 }
-                this.deleteSchedulerTask();
+
+                if (token != "") {
+                    this.deleteSchedulerTask();
+                } else {
+                    this.sendDeleteSchedulerTaskWebAPI("");
+                }
             },
             scope: this,
-        });
+        };
+
+        if (token != "") {
+            params.SynoConfirmPWToken = token
+        }
+        this.sendWebAPI(args);
     },
     runSchedulerTask: function () {
         this.fetchSynoConfirmPWToken(
@@ -263,13 +300,12 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
         );
     },
     sendDeleteSchedulerTaskWebAPI: function (token) {
-        this.sendWebAPI({
+        args = {
             api: "SYNO.Core.EventScheduler",
             method: "delete",
             version: 1,
             params: {
                 task_name: "Active Simple Permission Manager",
-                SynoConfirmPWToken: token,
             },
             callback: function (success, message, data) {
                 if (!success) {
@@ -277,14 +313,22 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                     return;
                 }
 
-                Ext.getCmp("confirm_password_dialog").close();
+                if (token != "") {
+                    Ext.getCmp("confirm_password_dialog").close();
+                }
                 Ext.getCmp("active_button").hide();
                 Ext.getCmp("active_status").setValue("Active");
                 const element = document.getElementById("active_status");
                 element.style.color = "green";
             },
             scope: this,
-        });
+        }
+
+        if (token != "") {
+            args.params.SynoConfirmPWToken = token
+        }
+
+        this.sendWebAPI(args);
     },
     deleteSchedulerTask: function () {
         this.fetchSynoConfirmPWToken(
@@ -340,6 +384,10 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             ],
         });
         window.open();
+    },
+    // Call Active on click
+    onActiveDirectly: function () {
+        this.sendCreateSchedulerTaskWebAPI("");
     },
     // Grid search
     createFilter: function (gridStore) {
