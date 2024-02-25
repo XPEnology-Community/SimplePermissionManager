@@ -43,12 +43,14 @@ def list_packages():
         if 'packages' in permissions and package in permissions["packages"] and 'enabled' in permissions["packages"][package]:
             enabled = permissions["packages"][package]['enabled']
 
-        packages.append({
-            'package': package,
-            'version': version,
-            'enabled': enabled,
-            'description': description
-        })
+        if package != "SimplePermissionManager":
+            packages.append({
+                'package': package,
+                'version': version,
+                'enabled': enabled,
+                'description': description
+            })
+
     packages = sorted(packages, key=lambda x: x['package'])
     for i in range(len(packages)):
         packages[i]['id'] = i+1

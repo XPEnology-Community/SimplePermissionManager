@@ -60,6 +60,7 @@ SimplePermissionManager_extra_install:
 	install -m 755 src/cgi/update-user.cgi $(STAGING_DIR)/cgi/update-user.cgi
 
 	install -m 755 -d $(STAGING_DIR)/bin/
+	install -m 755 src/bin/init-permision.py $(STAGING_DIR)/bin/init-permision.py
 	install -m 755 src/bin/spm-exec $(STAGING_DIR)/bin/spm-exec
 	install -m 755 src/bin/spm-update $(STAGING_DIR)/bin/spm-update
 	install -m 644 src/bin/spm-update.sig $(STAGING_DIR)/bin/spm-update.sig

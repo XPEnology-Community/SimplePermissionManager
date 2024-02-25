@@ -9,6 +9,8 @@ service_postinst ()
         fi
     done
 
+    ${SYNOPKG_PKGDEST}/bin/init-permision.py
+
     if [ -e /usr/local/bin/spm-exec ]; then
         st=$(stat -c "%U %G %a" /usr/local/bin/spm-exec)
         if [ "$st" = "root root 6755" ]; then
