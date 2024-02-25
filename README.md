@@ -108,5 +108,8 @@ fi
 /usr/local/bin/spm-exec /path/to/hello-world.sh
 
 # 2. execute target command and store pid
+# if need check status with pid, please ensure parent script is root or also call spm-exec to check status, like: spm-exec kill -0 $pid, or proxy all script to spm-exec, eg:
+# for start-stop-status, we can call spm-exec like this:
+#     start-stop-status -> spm-exec real-start-stop-status > real-start-stop-status
 /usr/local/bin/spm-exec -pid /path/to/pid /path/to/hello-world.sh
 ```
