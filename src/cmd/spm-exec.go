@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -185,7 +187,7 @@ func loadSignature(path string) (*Signature, error) {
 	return &signature, nil
 }
 
-func isPermissionOK(uid int) bool {
+func isUIDPermissionOK(uid int) bool {
 	permissions, err := loadPermissionConfig()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
@@ -265,14 +267,14 @@ func verifySignatureBySingleRootKey(rootPubKey string, signature *Signature, dat
 	return isSignatureMatchedBase64(pubKey, data, signature.Signature)
 }
 
-func isSignatureOK(sigPath string) bool {
+func isCommandSignatureOK(commandPath, sigPath string) bool {
 	signature, err := loadSignature(sigPath)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "load signature failed: %s\n", err)
 		return false
 	}
 
-	data, err := os.ReadFile(os.Args[1])
+	data, err := os.ReadFile(commandPath)
 	if err != nil {
 		return false
 	}
@@ -284,8 +286,8 @@ func isSignatureOK(sigPath string) bool {
 	return err == nil
 }
 
-func init() {
-	if len(os.Args) < 2 {
+func checkPermission(commandAndArgs []string) {
+	if len(commandAndArgs) < 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "missing command")
 		os.Exit(1)
 	}
@@ -301,7 +303,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	if isPermissionOK(uid) {
+	if isUIDPermissionOK(uid) {
 		return
 	}
 
@@ -311,10 +313,10 @@ func init() {
 		err     error
 	)
 
-	sigPath = os.Args[1] + ".sig"
+	sigPath = commandAndArgs[0] + ".sig"
 	stat, _ := os.Stat(sigPath)
 	if stat == nil {
-		_, _ = fmt.Fprintf(os.Stderr, "user with uid %d is not in permitted list and there is no signature for %s\n", uid, os.Args[1])
+		_, _ = fmt.Fprintf(os.Stderr, "user with uid %d is not in permitted list and there is no signature for %s\n", uid, commandAndArgs[0])
 		goto ErrPermission
 	}
 
@@ -329,21 +331,71 @@ func init() {
 		goto ErrPermission
 	}
 
-	if isSignatureOK(sigPath) {
+	if isCommandSignatureOK(commandAndArgs[0], sigPath) {
 		return
 	}
-	_, _ = fmt.Fprintf(os.Stderr, "%s signature is not match\n", os.Args[1])
+	_, _ = fmt.Fprintf(os.Stderr, "%s signature is not match\n", commandAndArgs[0])
 
 ErrPermission:
 	_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
 	os.Exit(1)
 }
 
-func main() {
-	subProcess := exec.Command(os.Args[1], os.Args[2:]...)
+func parseArgs(args []string) (spmArgs []string, commandAndArgs []string) {
+	for i, arg := range args {
+		if arg == "--" {
+			if len(args) > i+1 {
+				commandAndArgs = args[i+1:]
+			}
+			return
+		}
+
+		if strings.HasPrefix(arg, "-") {
+			spmArgs = append(spmArgs, arg)
+			continue
+		}
+
+		if len(args) > i {
+			commandAndArgs = args[i:]
+		}
+		return
+	}
+	return
+}
+
+func runCommand(commandAndArgs []string, pid *string) {
+	subProcess := exec.Command(commandAndArgs[0], commandAndArgs[1:]...)
 	subProcess.Stdin = os.Stdin
 	subProcess.Stdout = os.Stdout
 	subProcess.Stderr = os.Stderr
-	_ = subProcess.Run()
+
+	err := subProcess.Start()
+	if err != nil {
+		goto exit
+	}
+
+	if pid != nil {
+		os.WriteFile(*pid, []byte(fmt.Sprintf("%d", subProcess.ProcessState.Pid())), 0644)
+	}
+
+	_ = subProcess.Wait()
+
+exit:
 	os.Exit(subProcess.ProcessState.ExitCode())
+}
+
+func main() {
+	var pid *string
+
+	spmArgs, commandAndArgs := parseArgs(os.Args[1:])
+
+	if len(spmArgs) > 0 {
+		fs := flag.NewFlagSet("spm", flag.ExitOnError)
+		pid = fs.String("pid", "", "path to store command pid")
+		fs.Parse(spmArgs)
+	}
+
+	checkPermission(commandAndArgs)
+
+	runCommand(commandAndArgs, pid)
 }
