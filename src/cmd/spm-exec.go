@@ -392,6 +392,7 @@ func runCommand(user *user.User, commandAndArgs []string, pid *string) {
 
 	err := subProcess.Start()
 	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
 		goto exit
 	}
 
