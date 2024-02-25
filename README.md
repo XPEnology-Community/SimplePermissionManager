@@ -104,6 +104,9 @@ if [ ! "$st" = "root root 6755" ]; then
     exit 1
 fi
 
-# execute target command
-spm-exec /path/to/hello-world.sh
+# 1. execute target command
+/usr/local/bin/spm-exec /path/to/hello-world.sh
+
+# 2. execute target command and store pid
+/usr/local/bin/spm-exec -pid /path/to/pid /path/to/hello-world.sh
 ```
