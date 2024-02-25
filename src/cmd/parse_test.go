@@ -27,20 +27,20 @@ func TestXxx(t *testing.T) {
 		},
 		{
 			name:           "pid",
-			args:           []string{"-pid", "ls"},
-			spmArgs:        []string{"-pid"},
+			args:           []string{"-pid", "/var/run/pid", "ls"},
+			spmArgs:        []string{"-pid", "/var/run/pid"},
 			commandAndArgs: []string{"ls"},
 		},
 		{
 			name:           "pid with double dash",
-			args:           []string{"-pid", "--", "ls"},
-			spmArgs:        []string{"-pid"},
+			args:           []string{"-pid", "/var/run/pid", "--", "ls"},
+			spmArgs:        []string{"-pid", "/var/run/pid"},
 			commandAndArgs: []string{"ls"},
 		},
 		{
 			name:           "pid with double dash * 2",
-			args:           []string{"-pid", "--", "--"},
-			spmArgs:        []string{"-pid"},
+			args:           []string{"-pid", "/var/run/pid", "--", "--"},
+			spmArgs:        []string{"-pid", "/var/run/pid"},
 			commandAndArgs: []string{"--"},
 		},
 	}

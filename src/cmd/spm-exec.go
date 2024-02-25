@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -286,13 +288,21 @@ func isCommandSignatureOK(commandPath, sigPath string) bool {
 	return err == nil
 }
 
-func checkPermission(commandAndArgs []string) {
+func checkPermission(commandAndArgs []string) (_user *user.User) {
 	if len(commandAndArgs) < 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "missing command")
 		os.Exit(1)
 	}
 
+	var err error
+
 	uid := os.Getuid()
+	_user, err = user.LookupId(fmt.Sprintf("%d", uid))
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
+
 	if uid == 0 {
 		return
 	}
@@ -310,7 +320,6 @@ func checkPermission(commandAndArgs []string) {
 	var (
 		sigPath string
 		config  *Config
-		err     error
 	)
 
 	sigPath = commandAndArgs[0] + ".sig"
@@ -339,19 +348,31 @@ func checkPermission(commandAndArgs []string) {
 ErrPermission:
 	_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
 	os.Exit(1)
+	return
 }
 
 func parseArgs(args []string) (spmArgs []string, commandAndArgs []string) {
-	for i, arg := range args {
-		if arg == "--" {
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--" {
 			if len(args) > i+1 {
 				commandAndArgs = args[i+1:]
 			}
 			return
 		}
 
-		if strings.HasPrefix(arg, "-") {
-			spmArgs = append(spmArgs, arg)
+		// special case for help
+		if args[i] == "-h" || args[i] == "--h" || args[i] == "-help" || args[i] == "--help" {
+			spmArgs = append(spmArgs, args[i])
+			continue
+		}
+
+		// for other twinning args
+		if strings.HasPrefix(args[i], "-") {
+			if len(args) > i+1 {
+				spmArgs = append(spmArgs, args[i])
+				spmArgs = append(spmArgs, args[i+1])
+				i++
+			}
 			continue
 		}
 
@@ -363,7 +384,7 @@ func parseArgs(args []string) (spmArgs []string, commandAndArgs []string) {
 	return
 }
 
-func runCommand(commandAndArgs []string, pid *string) {
+func runCommand(user *user.User, commandAndArgs []string, pid *string) {
 	subProcess := exec.Command(commandAndArgs[0], commandAndArgs[1:]...)
 	subProcess.Stdin = os.Stdin
 	subProcess.Stdout = os.Stdout
@@ -375,7 +396,11 @@ func runCommand(commandAndArgs []string, pid *string) {
 	}
 
 	if pid != nil {
-		os.WriteFile(*pid, []byte(fmt.Sprintf("%d", subProcess.ProcessState.Pid())), 0644)
+		_ = syscall.Umask(0)
+		_ = os.WriteFile(*pid, []byte(fmt.Sprintf("%d", subProcess.Process.Pid)), 0644)
+		uid, _ := strconv.Atoi(user.Uid)
+		gid, _ := strconv.Atoi(user.Gid)
+		_ = os.Chown(*pid, uid, gid)
 	}
 
 	_ = subProcess.Wait()
@@ -395,7 +420,7 @@ func main() {
 		fs.Parse(spmArgs)
 	}
 
-	checkPermission(commandAndArgs)
+	user := checkPermission(commandAndArgs)
 
-	runCommand(commandAndArgs, pid)
+	runCommand(user, commandAndArgs, pid)
 }
