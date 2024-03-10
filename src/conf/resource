@@ -12,10 +12,17 @@
     "migrate": {
       "root": [
         {
-          "old": "SimplePermissionManager",
-          "new": "SimplePermissionManager"
+          "old": "sc-SimplePermissionManager",
+          "new": "sc-SimplePermissionManager"
         }
       ]
-    }
+    },
+    "pkg_dir_prepare": [{
+      "source": "/var/packages/SimplePermissionManager/target/app",
+      "target": "SimplePermissionManager",
+      "mode": "0755",
+      "group": "http",
+      "user": "sc-SimplePermissionManager"
+  }]
   }
 }

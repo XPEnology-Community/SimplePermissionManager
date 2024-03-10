@@ -3,9 +3,9 @@ SPK_VERS = 1.0.0
 SPK_REV = 7
 SPK_ICON = src/SimplePermissionManager.png
 WIZARDS_DIR = src/wizard
-DSM_UI_DIR = ui
+DSM_UI_DIR = app
 # workaround for creating package icons, while ADMIN_URL and SERVICE_PORT is none
-DSM_UI_CONFIG = src/ui/config
+DSM_UI_CONFIG = src/app/config
 
 MAINTAINER = jim3ma
 
@@ -33,22 +33,22 @@ include ../../mk/spksrc.spk.mk
 
 .PHONY: SimplePermissionManager_extra_install
 SimplePermissionManager_extra_install:
-	install -m 755 -d $(STAGING_DIR)/ui/
+	install -m 755 -d $(STAGING_DIR)/app/
 
-	ln -s /var/packages/SimplePermissionManager/target/cgi/ $(STAGING_DIR)/ui/cgi
-	install -m 644 src/ui/SimplePermissionManager.js $(STAGING_DIR)/ui/SimplePermissionManager.js
-	install -m 644 src/ui/config $(STAGING_DIR)/ui/config
-	install -m 644 src/ui/helptoc.conf $(STAGING_DIR)/ui/helptoc.conf
+	ln -s /var/packages/SimplePermissionManager/target/cgi/ $(STAGING_DIR)/app/cgi
+	install -m 644 src/app/SimplePermissionManager.js $(STAGING_DIR)/app/SimplePermissionManager.js
+	install -m 644 src/app/config $(STAGING_DIR)/app/config
+	install -m 644 src/app/helptoc.conf $(STAGING_DIR)/app/helptoc.conf
 
-	install -m 755 -d $(STAGING_DIR)/ui/help
+	install -m 755 -d $(STAGING_DIR)/app/help
 	for language in enu; do \
-		install -m 755 -d $(STAGING_DIR)/ui/help/$${language}; \
-		install -m 644 src/ui/help/$${language}/SimplePermissionManager_index.html $(STAGING_DIR)/ui/help/$${language}/SimplePermissionManager_index.html; \
+		install -m 755 -d $(STAGING_DIR)/app/help/$${language}; \
+		install -m 644 src/app/help/$${language}/SimplePermissionManager_index.html $(STAGING_DIR)/app/help/$${language}/SimplePermissionManager_index.html; \
 	done
-	install -m 755 -d $(STAGING_DIR)/ui/texts
+	install -m 755 -d $(STAGING_DIR)/app/texts
 	for language in chs enu; do \
-		install -m 755 -d $(STAGING_DIR)/ui/texts/$${language}; \
-		install -m 644 src/ui/texts/$${language}/strings $(STAGING_DIR)/ui/texts/$${language}/strings; \
+		install -m 755 -d $(STAGING_DIR)/app/texts/$${language}; \
+		install -m 644 src/app/texts/$${language}/strings $(STAGING_DIR)/app/texts/$${language}/strings; \
 	done
 
 	install -m 755 -d $(STAGING_DIR)/cgi/
