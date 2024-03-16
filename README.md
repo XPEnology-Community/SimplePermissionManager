@@ -4,13 +4,15 @@
 
 ## User Guide
 
+### Installation
+
 1. Download package from https://github.com/XPEnology-Community/SimplePermissionManager/releases
 
 2. Install `Simple Permission Manager` in `Package Center`
 
 ![step 1](docs/images/spm-installation-01.png)
 
-3. Open `SimplePermissionManager` from package list
+3. Open `Simple Permission Manager` from package list
 
 ![step 2](docs/images/spm-installation-02.png)
 
@@ -26,8 +28,6 @@
 
 ![step 5](docs/images/spm-installation-05.png)
 
-## Devloper Guide
-
 ### Manually Approve Package Guide
 
 1. Open `Simple Permission Manager` in DSM
@@ -39,6 +39,8 @@
 1. Open `Simple Permission Manager` in DSM
 2. Click `User` in tab
 3. Enable target user by clicking checkbox
+
+## Devloper Guide
 
 ### Auto Approve Guide
 
