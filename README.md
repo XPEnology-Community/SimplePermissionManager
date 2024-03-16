@@ -1,22 +1,48 @@
 # Simple Permission Manager
 
-Simple Permission Manager is used to approve some packages' priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.
+`Simple Permission Manager` is used to approve some packages' priviledged commands automatically, some drivers packages and other packages need high permission to execute their actions.
 
-## Manually Approve Package Guide
+## User Guide
+
+1. Download package from https://github.com/XPEnology-Community/SimplePermissionManager/releases
+
+2. Install `Simple Permission Manager` in `Package Center`
+
+![step 1](docs/images/spm-installation-01.png)
+
+3. Open `SimplePermissionManager` from package list
+
+![step 2](docs/images/spm-installation-02.png)
+
+3. Click `Active` button
+
+![step 3](docs/images/spm-installation-03.png)
+
+4. Type password
+
+![step 4](docs/images/spm-installation-04.png)
+
+5. Actived
+
+![step 5](docs/images/spm-installation-05.png)
+
+## Devloper Guide
+
+### Manually Approve Package Guide
 
 1. Open `Simple Permission Manager` in DSM
 2. Click `Package` in tab
 3. Enable target package by clicking checkbox
 
-## Manually Approve User Guide
+### Manually Approve User Guide
 
 1. Open `Simple Permission Manager` in DSM
 2. Click `User` in tab
 3. Enable target user by clicking checkbox
 
-## Auto Approve Guide
+### Auto Approve Guide
 
-### Generate Middle Public Key Signature
+#### Generate Middle Public Key Signature
 
 > Prepare gpg key before the following steps
 
@@ -36,7 +62,7 @@ gpg --output public.pgp.sig --detach-sign public.pgp
 
 Save `public.pgp` and `public.pgp.sig`
 
-### Generate Binary Signature
+#### Generate Binary Signature
 
 1. Sign by middle key
 
@@ -61,7 +87,7 @@ File name: `hello-world.sh.sig`
 }
 ```
 
-#### Sign Script
+##### Sign Script
 
 ```shell
 file=hello-world.sh
@@ -89,10 +115,10 @@ cat << EOF > "$file".sig
 EOF
 ```
 
-## Run Command in Packages
+### Run Command in Packages
 
 ```
-# check permission first
+## check permission first
 if [ ! -e /usr/local/bin/spm-exec ]; then
     echo "ERROR: /usr/local/bin/spm-exec not found. Please install SimplePermissionManager package and active it."
     exit 1
@@ -104,14 +130,14 @@ if [ ! "$st" = "root root 6755" ]; then
     exit 1
 fi
 
-# 1. execute target command
+## 1. execute target command
 /usr/local/bin/spm-exec /path/to/hello-world.sh
 
-# 2. execute target command and store pid
-# if need check status with pid, please ensure parent script is root
-# or also call spm-exec to check status,
-# like: spm-exec kill -0 $pid, or proxy all script to spm-exec, eg:
-# for start-stop-status, we can call spm-exec like this:
-#     start-stop-status -> spm-exec real-start-stop-status > real-start-stop-status
+## 2. execute target command and store pid
+## if need check status with pid, please ensure parent script is root
+## or also call spm-exec to check status,
+## like: spm-exec kill -0 $pid, or proxy all script to spm-exec, eg:
+## for start-stop-status, we can call spm-exec like this:
+##     start-stop-status -> spm-exec real-start-stop-status > real-start-stop-status
 /usr/local/bin/spm-exec -pid /path/to/pid /path/to/hello-world.sh
 ```
