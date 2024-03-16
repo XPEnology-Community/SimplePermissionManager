@@ -4,6 +4,7 @@ SPK_REV = 8
 SPK_ICON = src/SimplePermissionManager.png
 WIZARDS_DIR = src/wizard
 DSM_UI_DIR = app
+DSM_APP_NAME = SynoCommunity.SimplePermissionManager.AppInstance
 # workaround for creating package icons, while ADMIN_URL and SERVICE_PORT is none
 DSM_UI_CONFIG = src/app/config
 
