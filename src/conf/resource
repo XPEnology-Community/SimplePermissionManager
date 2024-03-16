@@ -1,4 +1,9 @@
 {
+  "usr-local-linker": {
+    "bin": [
+      "bin/spm-update"
+    ]
+  },
   "webservice": {
     "services": [
       {
@@ -17,12 +22,14 @@
         }
       ]
     },
-    "pkg_dir_prepare": [{
+    "pkg_dir_prepare": [
+      {
       "source": "/var/packages/SimplePermissionManager/target/app",
       "target": "SimplePermissionManager",
       "mode": "0755",
       "group": "http",
       "user": "sc-SimplePermissionManager"
-  }]
+      }
+    ]
   }
 }

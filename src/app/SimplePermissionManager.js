@@ -227,8 +227,7 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
             notify_mail: "",
             notify_if_error: false,
             operation_type: "script",
-            operation:
-                "/var/packages/SimplePermissionManager/target/bin/spm-update",
+            operation: "spm-update",
         };
 
         if (token != "") {
