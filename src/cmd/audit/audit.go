@@ -19,24 +19,24 @@ var (
 type Audit struct {
 	gorm.Model
 
-	Command   string
-	UID       int
-	Package   string
-	Signature string
-	Type      int
-	Action    int
-	Reason    string
+	Command         string
+	UID             int
+	Package         string
+	SignatureSigner string
+	Type            int
+	Action          int
+	Reason          string
 }
 
-func Add(cmd string, uid int, action Action, pkg string, signature string, typ Type, reason string) error {
+func Add(cmd string, uid int, action Action, pkg string, signer string, typ Type, reason string) error {
 	result := db.Create(&Audit{
-		Command:   cmd,
-		UID:       uid,
-		Package:   pkg,
-		Signature: signature,
-		Type:      int(typ),
-		Action:    int(action),
-		Reason:    reason,
+		Command:         cmd,
+		UID:             uid,
+		Package:         pkg,
+		SignatureSigner: signer,
+		Type:            int(typ),
+		Action:          int(action),
+		Reason:          reason,
 	})
 	return result.Error
 }
@@ -49,8 +49,8 @@ func AddUserApproved(cmd string, uid int) error {
 	return Add(cmd, uid, ActionApproved, "", "", TypeUser, ReasonUserVaild(uid))
 }
 
-func AddSignatureApproved(cmd string, uid int, signature string) error {
-	return Add(cmd, uid, ActionApproved, "", signature, TypeSignature, ReasonSignatureVaild(signature))
+func AddSignatureApproved(cmd string, uid int, signer string) error {
+	return Add(cmd, uid, ActionApproved, "", signer, TypeSignature, ReasonSignatureVaild(signer))
 }
 
 func AddDenied(cmd string, uid int) error {

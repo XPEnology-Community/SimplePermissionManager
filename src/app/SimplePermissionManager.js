@@ -52,6 +52,12 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                 items: [this.createUserGrid()],
             });
 
+            allTabs.push({
+                title: _V("ui", "audit_logs"),
+                layout: "fit",
+                items: [this.createAuditLogsGrid()],
+            });
+
             return allTabs;
         }.call(this);
 
@@ -405,21 +411,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
         return toolbar;
     },
-    // Create the display of packages
-    createPackages: function () {
-        return new SYNO.ux.FieldSet({
-            title: _V("ui", "package"),
-            collapsible: true,
-            autoHeight: true,
-            items: [
-                {
-                    xtype: "syno_compositefield",
-                    hideLabel: true,
-                    items: [this.createPackageGrid()],
-                },
-            ],
-        });
-    },
     // Create JSON Store grid calling list packages API
     createPackageGrid: function () {
         var localUrl =
@@ -578,21 +569,6 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
 
         return new SYNO.ux.GridPanel(c);
     },
-    // Create the display of users
-    createUsers: function () {
-        return new SYNO.ux.FieldSet({
-            title: _V("ui", "user"),
-            collapsible: true,
-            autoHeight: true,
-            items: [
-                {
-                    xtype: "syno_compositefield",
-                    hideLabel: true,
-                    items: [this.createUserGrid()],
-                },
-            ],
-        });
-    },
     // Create JSON Store grid calling list user API
     createUserGrid: function () {
         var localUrl =
@@ -689,6 +665,127 @@ Ext.define("SynoCommunity.SimplePermissionManager.AppWindow", {
                         header: "Group ID",
                         width: 100,
                         dataIndex: "gid",
+                    },
+                ],
+            }),
+            selModel: new Ext.grid.RowSelectionModel(),
+            viewConfig: {
+                forceFit: true,
+                onLoad: Ext.emptyFn,
+                listeners: {
+                    beforerefresh: function (f) {
+                        f.scrollTop = f.scroller.dom.scrollTop;
+                    },
+                    refresh: function (f) {
+                        f.scroller.dom.scrollTop = f.scrollTop;
+                    },
+                },
+            },
+            columnLines: true,
+            frame: false,
+            bbar: paging,
+            height: 385,
+            cls: "resource-monitor-performance",
+            listeners: {
+                scope: this,
+                render: function (grid) {
+                    grid.getStore().load({
+                        params: {
+                            offset: 0,
+                            limit: 10,
+                        },
+                    });
+                },
+            },
+        };
+
+        return new SYNO.ux.GridPanel(c);
+    },
+    // Create JSON Store grid calling list audit logs API
+    createAuditLogsGrid: function () {
+        var localUrl =
+            "/webman/3rdparty/SimplePermissionManager/cgi/list-audit-logs.cgi";
+
+        var gridStore = new SYNO.API.JsonStore({
+            autoDestroy: true,
+            url: localUrl,
+            restful: true,
+            root: "result",
+            idProperty: "id",
+            fields: [
+                {
+                    name: "id",
+                    type: "int",
+                },
+                {
+                    name: "command",
+                    type: "string",
+                },
+                {
+                    name: "uid",
+                    type: "int",
+                },
+                {
+                    name: "package",
+                    type: "string",
+                },
+                {
+                    name: "action",
+                    type: "int",
+                },
+                {
+                    name: "reason",
+                    type: "string",
+                },
+            ],
+        });
+
+        var paging = new SYNO.ux.PagingToolbar({
+            store: gridStore,
+            displayInfo: true,
+            pageSize: 10,
+            refreshText: "Reload",
+        });
+
+        var c = {
+            store: gridStore,
+            colModel: new Ext.grid.ColumnModel({
+                defaults: {
+                    sortable: true,
+                    menuDisabled: true,
+                    width: 100,
+                    height: 20,
+                },
+                columns: [
+                    {
+                        header: "ID",
+                        width: 30,
+                        dataIndex: "id",
+                    },
+                    {
+                        header: "User ID",
+                        width: 50,
+                        dataIndex: "uid",
+                    },
+                    {
+                        header: "Command",
+                        width: 80,
+                        dataIndex: "command",
+                    },
+                    {
+                        header: "Package",
+                        width: 150,
+                        dataIndex: "package",
+                    },
+                    {
+                        header: "Action",
+                        width: 30,
+                        dataIndex: "action",
+                    },
+                    {
+                        header: "Reason",
+                        width: 100,
+                        dataIndex: "reason",
                     },
                 ],
             }),

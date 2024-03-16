@@ -54,6 +54,7 @@ SimplePermissionManager_extra_install:
 
 	install -m 755 -d $(STAGING_DIR)/cgi/
 	install -m 755 src/cgi/config.cgi $(STAGING_DIR)/cgi/config.cgi
+	install -m 755 src/cgi/list-audit-logs.cgi $(STAGING_DIR)/cgi/list-audit-logs.cgi
 	install -m 755 src/cgi/list-packages.cgi $(STAGING_DIR)/cgi/list-packages.cgi
 	install -m 755 src/cgi/list-users.cgi $(STAGING_DIR)/cgi/list-users.cgi
 	install -m 755 src/cgi/status.cgi $(STAGING_DIR)/cgi/status.cgi
