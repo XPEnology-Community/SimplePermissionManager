@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path"
+	"spm/audit"
 	"strconv"
 	"strings"
 	"syscall"
@@ -144,6 +145,11 @@ type Config struct {
 	TrustSignature bool `json:"trustSignature"`
 }
 
+type PermissionChecker struct {
+	commandAndArgs []string
+	uid            int
+}
+
 func loadPermissionConfig() (*Permission, error) {
 	fileContent, err := os.ReadFile(permissionsPath)
 	if err != nil {
@@ -189,61 +195,73 @@ func loadSignature(path string) (*Signature, error) {
 	return &signature, nil
 }
 
-func isUIDPermissionOK(uid int) bool {
+func (p *PermissionChecker) isUIDPermissionOK() bool {
 	permissions, err := loadPermissionConfig()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "load config failed: %s\n", err)
 		return false
 	}
 
-	for _, p := range permissions.Packages {
-		if p.UID == uid {
-			return p.Enabled
+	for _, pkg := range permissions.Packages {
+		if pkg.UID == p.uid {
+			if pkg.Enabled {
+				audit.AddPackageApproved(p.commandAndArgs[0], p.uid, pkg.Package)
+			}
+			return pkg.Enabled
 		}
 	}
 
 	for _, u := range permissions.Users {
-		if u.UID == uid {
+		if u.UID == p.uid {
+			if u.Enabled {
+				audit.AddUserApproved(p.commandAndArgs[0], p.uid)
+			}
 			return u.Enabled
 		}
 	}
 	return false
 }
 
-func isSignatureMatched(pubKey []byte, data []byte, signature []byte) error {
+func isSignatureMatched(pubKey []byte, data []byte, signature []byte) (keyID string, err error) {
 	pgpSignature := crypto.NewPGPSignature(signature)
 
 	publicKeyObj, err := crypto.NewKey(pubKey)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	signingKeyRing, err := crypto.NewKeyRing(publicKeyObj)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return signingKeyRing.VerifyDetached(crypto.NewPlainMessage(data), pgpSignature, crypto.GetUnixTime())
+	for key := range publicKeyObj.GetEntity().Identities {
+		keyID = key
+		break
+	}
+
+	err = signingKeyRing.VerifyDetached(crypto.NewPlainMessage(data), pgpSignature, crypto.GetUnixTime())
+	return keyID, err
 }
 
-func isSignatureMatchedBase64(pubKey string, data []byte, signature string) error {
+func isSignatureMatchedBase64(pubKey string, data []byte, signature string) (keyID string, err error) {
 	pubKeyBin, err := base64.StdEncoding.DecodeString(pubKey)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	signatureBin, err := base64.StdEncoding.DecodeString(signature)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return isSignatureMatched(pubKeyBin, data, signatureBin)
 }
 
-func verifySignature(signature *Signature, data []byte) error {
+func (p *PermissionChecker) verifySignature(signature *Signature, data []byte) error {
 	var err error
 	for _, pk := range rootPubKeys {
-		err = verifySignatureBySingleRootKey(pk, signature, data)
+		err = p.verifySignatureBySingleRootKey(pk, signature, data)
 		if err == nil {
 			return nil
 		}
@@ -252,24 +270,30 @@ func verifySignature(signature *Signature, data []byte) error {
 	return err
 }
 
-func verifySignatureBySingleRootKey(rootPubKey string, signature *Signature, data []byte) error {
+func (p *PermissionChecker) verifySignatureBySingleRootKey(rootPubKey string, signature *Signature, data []byte) error {
 	pubKey := rootPubKey
+
+	// verify middle public keys
 	for _, pk := range signature.PublicKeys {
 		pkData, err := base64.StdEncoding.DecodeString(pk.PublicKey)
 		if err != nil {
 			return err
 		}
-		err = isSignatureMatchedBase64(pubKey, pkData, pk.Signature)
+		_, err = isSignatureMatchedBase64(pubKey, pkData, pk.Signature)
 		if err != nil {
 			return err
 		}
 		pubKey = pk.PublicKey
 	}
 
-	return isSignatureMatchedBase64(pubKey, data, signature.Signature)
+	keyID, err := isSignatureMatchedBase64(pubKey, data, signature.Signature)
+	if err == nil {
+		audit.AddSignatureApproved(p.commandAndArgs[0], p.uid, keyID)
+	}
+	return err
 }
 
-func isCommandSignatureOK(commandPath, sigPath string) bool {
+func (p *PermissionChecker) isCommandSignatureOK(commandPath, sigPath string) bool {
 	signature, err := loadSignature(sigPath)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "load signature failed: %s\n", err)
@@ -281,29 +305,30 @@ func isCommandSignatureOK(commandPath, sigPath string) bool {
 		return false
 	}
 
-	err = verifySignature(signature, data)
+	err = p.verifySignature(signature, data)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "verify signature failed: %s\n", err)
 	}
 	return err == nil
 }
 
-func checkPermission(commandAndArgs []string) (_user *user.User) {
-	if len(commandAndArgs) < 1 {
+func (p *PermissionChecker) checkPermission() (_user *user.User) {
+	if len(p.commandAndArgs) < 1 {
 		_, _ = fmt.Fprintf(os.Stderr, "missing command")
 		os.Exit(1)
 	}
 
 	var err error
 
-	uid := os.Getuid()
-	_user, err = user.LookupId(fmt.Sprintf("%d", uid))
+	p.uid = os.Getuid()
+
+	_user, err = user.LookupId(fmt.Sprintf("%d", p.uid))
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 
-	if uid == 0 {
+	if p.uid == 0 {
 		return
 	}
 
@@ -313,19 +338,20 @@ func checkPermission(commandAndArgs []string) (_user *user.User) {
 		os.Exit(1)
 	}
 
-	if isUIDPermissionOK(uid) {
+	if p.isUIDPermissionOK() {
 		return
 	}
 
 	var (
 		sigPath string
 		config  *Config
+		cmd     = p.commandAndArgs[0]
 	)
 
-	sigPath = commandAndArgs[0] + ".sig"
+	sigPath = cmd + ".sig"
 	stat, _ := os.Stat(sigPath)
 	if stat == nil {
-		_, _ = fmt.Fprintf(os.Stderr, "user with uid %d is not in permitted list and there is no signature for %s\n", uid, commandAndArgs[0])
+		_, _ = fmt.Fprintf(os.Stderr, "user with uid %d is not in permitted list and there is no signature for %s\n", p.uid, cmd)
 		goto ErrPermission
 	}
 
@@ -340,13 +366,14 @@ func checkPermission(commandAndArgs []string) (_user *user.User) {
 		goto ErrPermission
 	}
 
-	if isCommandSignatureOK(commandAndArgs[0], sigPath) {
+	if p.isCommandSignatureOK(cmd, sigPath) {
 		return
 	}
-	_, _ = fmt.Fprintf(os.Stderr, "%s signature is not match\n", commandAndArgs[0])
+	_, _ = fmt.Fprintf(os.Stderr, "%s signature is not match\n", cmd)
 
 ErrPermission:
 	_, _ = fmt.Fprintf(os.Stderr, "%s\n", os.ErrPermission)
+	audit.AddDenied(cmd, p.uid)
 	os.Exit(1)
 	return
 }
@@ -421,7 +448,11 @@ func main() {
 		fs.Parse(spmArgs)
 	}
 
-	user := checkPermission(commandAndArgs)
+	checker := &PermissionChecker{
+		commandAndArgs: commandAndArgs,
+	}
+
+	user := checker.checkPermission()
 
 	runCommand(user, commandAndArgs, pid)
 }
