@@ -12,21 +12,27 @@
 
 ![step 1](docs/images/spm-installation-01.png)
 
-3. Open `Simple Permission Manager` from package list
+3. Open `Simple Permission Manager`
+
+* From `Package Center`
 
 ![step 2](docs/images/spm-installation-02.png)
 
-3. Click `Active` button
+* From `Main Menu`
 
 ![step 3](docs/images/spm-installation-03.png)
 
-4. Type password
+3. Click `Active` button
 
 ![step 4](docs/images/spm-installation-04.png)
 
-5. Actived
+4. Type password
 
 ![step 5](docs/images/spm-installation-05.png)
+
+5. Actived
+
+![step 6](docs/images/spm-installation-06.png)
 
 ### Manually Approve Package Guide
 
